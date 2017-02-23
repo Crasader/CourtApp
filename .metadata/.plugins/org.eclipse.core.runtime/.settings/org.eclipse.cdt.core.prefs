@@ -1,0 +1,17 @@
+build.all.configs.enabled=false
+build.proj.ref.configs.enabled=false
+eclipse.preferences.version=1
+environment/workspace/ANDROID_SDK_ROOT/delimiter=\:
+environment/workspace/ANDROID_SDK_ROOT/operation=append
+environment/workspace/ANDROID_SDK_ROOT/value=/Users/kiyotaka-saitou/android/sdk/android-sdk-macosx
+environment/workspace/ANT_ROOT/delimiter=\:
+environment/workspace/ANT_ROOT/operation=append
+environment/workspace/ANT_ROOT/value=/Users/kiyotaka-saitou/cocos2d-x/apache-ant-1.9.6
+environment/workspace/NDK_ROOT/delimiter=\:
+environment/workspace/NDK_ROOT/operation=append
+environment/workspace/NDK_ROOT/value=/Users/kiyotaka-saitou/android/ndk/android-ndk-r11c
+environment/workspace/PATH/delimiter=\:
+environment/workspace/PATH/operation=append
+environment/workspace/PATH/value=/Users/kiyotaka-saitou/cocos2d-x/cocos2d-x-3.7.1/tools/cocos2d-console/bin
+environment/workspace/append=true
+environment/workspace/appendContributed=true
