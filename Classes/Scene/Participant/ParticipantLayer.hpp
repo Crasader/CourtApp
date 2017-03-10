@@ -13,6 +13,11 @@
 
 class ParticipantLayer : public CsbLayerBase
 {
+    enum ButtonTag
+    {
+        Setting,
+    };
+
     
 public:
     static ParticipantLayer *create();

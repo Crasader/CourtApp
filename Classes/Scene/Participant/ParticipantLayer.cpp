@@ -49,6 +49,7 @@ bool ParticipantLayer::init()
 
     // ボタン
     auto headerPanel = mainLayer->getChildByName<ui::Layout *>("HeaderPanel");
+    this->addButtonEvent(headerPanel->getChildByName<ui::Button *>("ButtonSetting"), ButtonTag::Setting);
 
     // 表示更新
     scrollView = mainLayer->getChildByName<ui::ScrollView *>("ScrollView");
@@ -63,7 +64,27 @@ void ParticipantLayer::pushedButton(cocos2d::Ref *pSender, cocos2d::ui::Widget::
 {
     if (type != ui::Widget::TouchEventType::ENDED) return;
     auto button = dynamic_cast<ui::Button *>(pSender);
-//    ButtonTag tag = (ButtonTag)button->getTag();
+    ButtonTag tag = (ButtonTag)button->getTag();
+    
+    switch (tag) {
+        case ButtonTag::Setting:
+        {
+            std::vector<int> selectedIdList;
+            auto entryMemberList = Manager::Member::getInstance()->getEntryMemberList();
+            for (auto entryMember : entryMemberList)
+            {
+                if (entryMember->checked)
+                    selectedIdList.push_back(entryMember->id);
+            }
+            
+            if (selectedIdList.empty())
+                Kyarochon::Event::sendCustomEventWithData(EVENT_SHOW_ALERT_VIEW, "編集したい参加者を\n1人以上チェックしてください");
+            else
+                Kyarochon::Event::sendCustomEventWithData(EVENT_SHOW_SOME_PARTICIPANTS_MENU, selectedIdList);
+            
+            break;
+        }
+    }
 }
 
 // 表示更新

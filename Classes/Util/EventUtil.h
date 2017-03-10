@@ -25,6 +25,7 @@ USING_NS_CC;
 #define EVENT_SHOW_GAME_HISTORY     "EventTypeShowGameHistory"
 #define EVENT_SHOW_WIN_LIST         "EventTypeShowWinList"
 #define EVENT_SHOW_MEMBER_EDIT      "EventTypeShowMemberEdit"
+#define EVENT_SHOW_SOME_PARTICIPANTS_MENU "EventTypeShowSomeParticipantsMenu"
 // アラート表示
 #define EVENT_SHOW_ALERT_VIEW       "EventTypeShowAlertView"
 #define EVENT_SHOW_CONFIRM_VIEW     "EventTypeShowConfirmView"
@@ -33,7 +34,8 @@ namespace Kyarochon {
 namespace Event {
         
     // --- 単純なイベント送信 ---
-    static void sendCustomEvent(std::string eventName) {
+    static void sendCustomEvent(std::string eventName)
+    {
         Director::getInstance()->getScheduler()->performFunctionInCocosThread([=](){
             auto event = EventCustom(eventName);
             Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
@@ -42,7 +44,9 @@ namespace Event {
     
     // --- データ付きイベント送信 ---
     // int
-    static void sendCustomEventWithData(std::string eventName, int data) {
+    template <typename T>
+    static void sendCustomEventWithData(std::string eventName, T data)
+    {
         Director::getInstance()->getScheduler()->performFunctionInCocosThread([=](){
             auto event = EventCustom(eventName);
             auto value = Value(data);
@@ -50,37 +54,24 @@ namespace Event {
             Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
         });
     }
-    // double
-    static void sendCustomEventWithData(std::string eventName, double data) {
+    // std::vector<int>
+    static void sendCustomEventWithData(std::string eventName, std::vector<int> data)
+    {
         Director::getInstance()->getScheduler()->performFunctionInCocosThread([=](){
             auto event = EventCustom(eventName);
-            auto value = Value(data);
+            ValueVector valueVector;
+            for (auto intVal : data)
+            {
+                valueVector.push_back(Value(intVal));
+            }
+            auto value = Value(valueVector);
             event.setUserData(&value);
-            Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
-        });
-    }
-    // bool
-    static void sendCustomEventWithData(std::string eventName, bool data) {
-        Director::getInstance()->getScheduler()->performFunctionInCocosThread([=](){
-            auto event = EventCustom(eventName);
-            auto value = Value(data);
-            event.setUserData(&value);
-            
-            Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
-        });
-    }
-    // std::string
-    static void sendCustomEventWithData(std::string eventName, std::string data) {
-        Director::getInstance()->getScheduler()->performFunctionInCocosThread([=](){
-            auto event = EventCustom(eventName);
-            auto value = Value(data);
-            event.setUserData(&value);
-            
             Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
         });
     }
     // Vec2
-    static void sendCustomEventWithData(std::string eventName, cocos2d::Vec2 data) {
+    static void sendCustomEventWithData(std::string eventName, cocos2d::Vec2 data)
+    {
         Director::getInstance()->getScheduler()->performFunctionInCocosThread([=](){
             std::map<std::string, float> mapData;
             mapData["x"] = data.x;
@@ -91,7 +82,8 @@ namespace Event {
         });
     }
     // ConfirmInfo(独自クラス)
-    static void sendCustomEventWithData(std::string eventName, ConfirmInfo *info) {
+    static void sendCustomEventWithData(std::string eventName, ConfirmInfo *info)
+    {
         Director::getInstance()->getScheduler()->performFunctionInCocosThread([=](){
             auto event = EventCustom(eventName);
             event.setUserData(info);
@@ -99,44 +91,58 @@ namespace Event {
         });
     }
     
+    
     // --- データの取得 ---
     // int
-    static int getEventDataInt(EventCustom *event) {
-        auto value = (Value *)event->getUserData();
-        return value->asInt();
+    static int getEventDataInt(EventCustom *event)
+    {
+        return ((Value *)event->getUserData())->asInt();
     }
     // float
-    static float getEventDataFloat(EventCustom *event) {
-        auto value = (Value *)event->getUserData();
-        return value->asFloat();
+    static float getEventDataFloat(EventCustom *event)
+    {
+        return ((Value *)event->getUserData())->asFloat();
     }
     // double
-    static double getEventDataDouble(EventCustom *event) {
-        auto value = (Value *)event->getUserData();
-        return value->asDouble();
+    static double getEventDataDouble(EventCustom *event)
+    {
+        return ((Value *)event->getUserData())->asDouble();
     }
     // bool
-    static bool getEventDataBool(EventCustom *event) {
-        auto value = (Value *)event->getUserData();
-        return value->asBool();
+    static bool getEventDataBool(EventCustom *event)
+    {
+        return ((Value *)event->getUserData())->asBool();
     }
     // std::string
-    static std::string getEventDataString(EventCustom *event) {
-        auto value = (Value *)event->getUserData();
-        return value->asString();
+    static std::string getEventDataString(EventCustom *event)
+    {
+        return ((Value *)event->getUserData())->asString();
+    }
+    // std::vector<int>
+    static std::vector<int> getEventDataIntVector(EventCustom *event)
+    {
+        std::vector<int> ret;
+        auto valuevector = ((Value *)event->getUserData())->asValueVector();
+        for (auto value : valuevector)
+        {
+            ret.push_back(value.asInt());
+        }
+        return ret;
     }
     // Vec2
-    static cocos2d::Vec2 getEventDataVec2(EventCustom *event) {
+    static cocos2d::Vec2 getEventDataVec2(EventCustom *event)
+    {
         auto value = static_cast<std::map<std::string, float> *>(event->getUserData());
         float x = value->at("x");
         float y = value->at("y");
         return cocos2d::Vec2(x, y);
     }
-    static ConfirmInfo *getEventDataConfimInfo(EventCustom *event) {
-        auto value = (ConfirmInfo *)event->getUserData();
-        return value;
+    // ConfirmInfo
+    static ConfirmInfo *getEventDataConfimInfo(EventCustom *event)
+    {
+        return (ConfirmInfo *)event->getUserData();
     }
-    
+
     
     
     // --- イベントの登録 ---

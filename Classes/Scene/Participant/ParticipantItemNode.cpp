@@ -84,7 +84,7 @@ bool ParticipantItemNode::init(UserInfo *userInfo)
     
     // チェックボックス
     checkImage = panel->getChildByName<Sprite *>("CheckImage");
-    checkImage->setVisible(false);
+    checkImage->setVisible(userInfo->checked);
     
     
     return true;
@@ -99,7 +99,8 @@ void ParticipantItemNode::pushedButton(Ref *pSender, ui::Widget::TouchEventType 
 
 void ParticipantItemNode::shortTappedButton(int tag)
 {
-    this->checkImage->setVisible(!this->checkImage->isVisible());
+    userInfo->checked = !userInfo->checked;
+    checkImage->setVisible(userInfo->checked);
 }
 
 void ParticipantItemNode::longTappedButton(int tag)

@@ -61,6 +61,7 @@ public:
     // 参加情報
     int gameCount;
     EntryMode entryMode;
+    bool checked;
     int pairCountArray[1000];
     int fightCountArray[1000];
     int winCountArray[1000];

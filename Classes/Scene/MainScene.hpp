@@ -32,7 +32,8 @@ protected:
     
     // Event
     void eventSelectTab(cocos2d::EventCustom *event);
-    void eventShowMemberMenu(cocos2d::EventCustom *event);
+    void eventShowParticipantMenu(cocos2d::EventCustom *event);
+    void eventShowSomeParticipantsMenu(cocos2d::EventCustom *event);
     void eventShowGameHistory(cocos2d::EventCustom *event);
     void eventShowWinList(cocos2d::EventCustom *event);
     void eventShowMemberEdit(cocos2d::EventCustom *event);

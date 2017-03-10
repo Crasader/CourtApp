@@ -31,7 +31,8 @@ MainScene::MainScene()
 {
     // イベント登録
     Kyarochon::Event::setEventListener(EVENT_SELECT_TAB, CC_CALLBACK_1(MainScene::eventSelectTab, this));
-    Kyarochon::Event::setEventListener(EVENT_SHOW_PARTICIPANT_MENU, CC_CALLBACK_1(MainScene::eventShowMemberMenu, this));
+    Kyarochon::Event::setEventListener(EVENT_SHOW_PARTICIPANT_MENU, CC_CALLBACK_1(MainScene::eventShowParticipantMenu, this));
+    Kyarochon::Event::setEventListener(EVENT_SHOW_SOME_PARTICIPANTS_MENU, CC_CALLBACK_1(MainScene::eventShowSomeParticipantsMenu, this));
     Kyarochon::Event::setEventListener(EVENT_SHOW_GAME_HISTORY, CC_CALLBACK_1(MainScene::eventShowGameHistory, this));
     Kyarochon::Event::setEventListener(EVENT_SHOW_WIN_LIST, CC_CALLBACK_1(MainScene::eventShowWinList, this));
     Kyarochon::Event::setEventListener(EVENT_SHOW_MEMBER_EDIT, CC_CALLBACK_1(MainScene::eventShowMemberEdit, this));
@@ -44,6 +45,7 @@ MainScene::~MainScene()
     // イベント削除
     Kyarochon::Event::removeEventListener(EVENT_SELECT_TAB);
     Kyarochon::Event::removeEventListener(EVENT_SHOW_PARTICIPANT_MENU);
+    Kyarochon::Event::removeEventListener(EVENT_SHOW_SOME_PARTICIPANTS_MENU);
     Kyarochon::Event::removeEventListener(EVENT_SHOW_GAME_HISTORY);
     Kyarochon::Event::removeEventListener(EVENT_SHOW_WIN_LIST);
     Kyarochon::Event::removeEventListener(EVENT_SHOW_MEMBER_EDIT);
@@ -124,12 +126,24 @@ void MainScene::eventSelectTab(cocos2d::EventCustom *event)
 
 
 
-void MainScene::eventShowMemberMenu(cocos2d::EventCustom *event)
+void MainScene::eventShowParticipantMenu(cocos2d::EventCustom *event)
 {
     int memberId = Kyarochon::Event::getEventDataInt(event);
     auto userInfo = Manager::Member::getInstance()->getMemberAt(memberId);
     
-    auto participantMenuLayer = ParticipantMenuLayer::create(userInfo);
+    auto participantMenuLayer = ParticipantMenuLayer::create({userInfo});
+    this->addChild(participantMenuLayer, MainOrder::Overlay);
+}
+void MainScene::eventShowSomeParticipantsMenu(cocos2d::EventCustom *event)
+{
+    auto memberIdList = Kyarochon::Event::getEventDataIntVector(event);
+    std::vector<UserInfo *> userInfoList;
+    for (auto memberId : memberIdList)
+    {
+        userInfoList.push_back(Manager::Member::getInstance()->getMemberAt(memberId));
+    }
+    
+    auto participantMenuLayer = ParticipantMenuLayer::create(userInfoList);
     this->addChild(participantMenuLayer, MainOrder::Overlay);
 }
 

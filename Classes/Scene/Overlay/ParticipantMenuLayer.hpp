@@ -27,16 +27,16 @@ class ParticipantMenuLayer : public CsbLayerBase
     
     
 public:
-    static ParticipantMenuLayer *create(UserInfo *userInfo);
+    static ParticipantMenuLayer *create(std::vector<UserInfo *> userInfoList);
     
     
 protected:
     ParticipantMenuLayer();
     virtual ~ParticipantMenuLayer();
-    bool init(UserInfo *userInfo);
+    bool init(std::vector<UserInfo *> userInfoList);
     
     // ユーザ情報
-    UserInfo *userInfo;
+    std::vector<UserInfo *> userInfoList;
     
     // ボタン
     cocos2d::ui::Button *buttonNormal;

@@ -55,6 +55,7 @@ void UserInfo::initialize()
 {
     this->gameCount = 0;
     this->entryMode  = EntryMode::Normal;
+    this->checked = false;
     for (int i = 0; i < 1000; i++)
     {
         pairCountArray[i] = 0;
