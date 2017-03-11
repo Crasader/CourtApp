@@ -89,9 +89,7 @@ void ParticipantLayer::pushedButton(cocos2d::Ref *pSender, cocos2d::ui::Widget::
 
 // 表示更新
 void ParticipantLayer::updateParticipantList()
-{
-    CCLOG("[debug] ParticipantLayer::updateParticipantList");
-    
+{    
     auto entryListPerLevel = Manager::Member::getInstance()->getEntryMemberListPerLevel();
     auto entryList = Manager::Member::getInstance()->getEntryMemberList();
     
@@ -131,8 +129,6 @@ void ParticipantLayer::updateParticipantList()
     float y = contentHeight + (DEFAULT_SCREEN_HEIGHT - Kyarochon::Layout::getScaledHeight());
     for (std::pair<std::string, std::vector<UserInfo *>> entryMemberListPair : entryListPerLevel)
     {
-        CCLOG("[debug_test] 1 y=%f", y);
-        
         std::string categoryName = entryMemberListPair.first;
         std::vector<UserInfo *> memberList = entryMemberListPair.second;
         
@@ -143,7 +139,6 @@ void ParticipantLayer::updateParticipantList()
         categoryItemNode->setPosition(MEMBER_CATEGORY_ITEM_WIDTH / 2.0f, y);
         scrollView->addChild(categoryItemNode);
         
-        CCLOG("[debug_test] 2 y=%f", y);
         // メンバーリスト
         y -= (MEMBER_CATEGORY_ITEM_HEIGHT + PARTICIPANT_ITEM_HEIGHT) / 2.0f;
         for (int i = 0; i < memberList.size(); i++)
@@ -157,11 +152,8 @@ void ParticipantLayer::updateParticipantList()
             participantItemNode->setPosition(Vec2(x, y));
             scrollView->addChild(participantItemNode);
         }
-        CCLOG("[debug_test] 3 y=%f", y);
         y -= PARTICIPANT_ITEM_HEIGHT / 2.0f;
     }
-    
-    CCLOG("[debug_test] contentHeight:%f, scrollHeight:%f", contentHeight, scrollHeight);
     
     // 人数関連
     int entryNum = (int)entryList.size();

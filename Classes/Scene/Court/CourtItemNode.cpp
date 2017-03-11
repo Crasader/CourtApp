@@ -67,8 +67,6 @@ bool CourtItemNode::init(CourtInfo *courtInfo)
         float x = ((float)(num / 2) + 0.5f) * COURT_MEMBER_ITEM_WIDTH;
         float y = panel->getContentSize().height - 40.0f - (floorf(num % 2) + 0.5f ) * COURT_MEMBER_ITEM_HEIGHT + (DEFAULT_SCREEN_HEIGHT - Kyarochon::Layout::getScaledHeight());
         
-        CCLOG("%f", panel->getContentSize().height);
-        
         memberItemNode->setPosition(Vec2(x, y));
         panel->addChild(memberItemNode);
         num++;
