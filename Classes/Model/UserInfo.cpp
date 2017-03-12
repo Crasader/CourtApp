@@ -102,7 +102,7 @@ std::string UserInfo::convertLevelToString(Level level)
 {
     switch (level) {
         case Level::Training:   return "training";
-        case Level::Beginner:   return "begginer";
+        case Level::Beginner:   return "beginner";
         case Level::Middle:     return "middle";
         case Level::Higher:     return "higher";
         default:                return "unknown";

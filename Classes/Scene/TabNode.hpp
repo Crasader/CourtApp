@@ -17,7 +17,8 @@ public:
     static TabNode *create();
 
     void changeSelectedTab(TabType tabType);
-
+    void setTabEnabled(bool enabled);
+    
 protected:
     // コンストラクタ／デストラクタ
     TabNode();
@@ -30,5 +31,8 @@ protected:
     virtual void pushedButton(cocos2d::Ref *pSender, cocos2d::ui::Widget::TouchEventType type);
     void setTabButtonEnabled(TabType tabType, bool enabled);
     TabType currentTabType;
+    
+    // 有効かどうか
+    bool isTabEnabled;
 };
 #endif /* TabNode_hpp */

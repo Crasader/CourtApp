@@ -29,6 +29,8 @@ USING_NS_CC;
 // アラート表示
 #define EVENT_SHOW_ALERT_VIEW       "EventTypeShowAlertView"
 #define EVENT_SHOW_CONFIRM_VIEW     "EventTypeShowConfirmView"
+// Drawer非表示
+#define EVENT_HIDE_DRAWER_LAYER     "EventTypeHideDrawerLayer"
 
 namespace Kyarochon {
 namespace Event {

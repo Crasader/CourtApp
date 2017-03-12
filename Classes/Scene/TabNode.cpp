@@ -15,6 +15,7 @@ using namespace cocostudio;
 
 TabNode::TabNode()
 :currentTabType(TabType::None)
+,isTabEnabled(true)
 {
 }
 
@@ -55,6 +56,7 @@ bool TabNode::init()
 void TabNode::pushedButton(Ref *pSender, ui::Widget::TouchEventType type)
 {
     if (type != ui::Widget::TouchEventType::ENDED) return;
+    if (!isTabEnabled) return;
     
     // TODO: SE鳴らす
     
@@ -100,4 +102,9 @@ void TabNode::setTabButtonEnabled(TabType tabType, bool enabled)
     
 }
 
+
+void TabNode::setTabEnabled(bool enabled)
+{
+    this->isTabEnabled = enabled;
+}
 

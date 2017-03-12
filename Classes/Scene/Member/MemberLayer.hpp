@@ -56,6 +56,7 @@ private:
     
     // イベント
     void eventUpdateMemberList(EventCustom *event);
+    void eventHideDrawerLayer(EventCustom *event);
 
     //
     void moveSearchDrawerLayer();

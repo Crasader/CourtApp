@@ -14,6 +14,11 @@
 
 class SearchDrawerLayer : public CsbLayerBase
 {
+    enum ButtonTag
+    {
+        HideLayer,
+    };
+    
     enum CheckBoxTag
     {
         // ソート
@@ -37,6 +42,9 @@ class SearchDrawerLayer : public CsbLayerBase
 public:
     static SearchDrawerLayer *create();
     std::string getSearchText();
+    void showLayer();
+    void hideLayer();
+    
     
 protected:
     SearchDrawerLayer();
@@ -44,11 +52,14 @@ protected:
     bool init();
     
     virtual void pushedCheckBox(cocos2d::Ref *pSender, cocos2d::ui::CheckBox::EventType type);
+    virtual void pushedButton(cocos2d::Ref *pSender, cocos2d::ui::Widget::TouchEventType type);
     
 private:
     Gender gender = Gender::Unknown;
     Level level   = Level::Unknown;
     std::string searchWord = "";
+    
+    cocos2d::ui::Button *hideLayerButton;
     
     cocos2d::ui::CheckBox *syllabaryCheckBox;
     cocos2d::ui::CheckBox *genderCheckBox;

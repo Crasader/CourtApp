@@ -67,7 +67,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     Kyarochon::UserDefault::initInt(UD_KEY_COURT_NUM, 1);
     Kyarochon::UserDefault::initInt(UD_KEY_SORT_TYPE, (int)SortType::Syllabary);
     Kyarochon::UserDefault::initBool(UD_KEY_FILTER_MALE, true);
-    Kyarochon::UserDefault::initBool(UD_KEY_FILTER_MALE, true);
+    Kyarochon::UserDefault::initBool(UD_KEY_FILTER_FEMALE, true);
     Kyarochon::UserDefault::initBool(UD_KEY_FILTER_TRAINING, true);
     Kyarochon::UserDefault::initBool(UD_KEY_FILTER_BEGINNER, true);
     Kyarochon::UserDefault::initBool(UD_KEY_FILTER_MIDDLE, true);

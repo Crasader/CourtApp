@@ -25,6 +25,7 @@ MemberLayer::MemberLayer()
 ,isMovingDrawer(false)
 {
     Kyarochon::Event::setEventListener(EVENT_UPDATE_MEMBER_LIST, CC_CALLBACK_1(MemberLayer::eventUpdateMemberList, this));
+    Kyarochon::Event::setEventListener(EVENT_HIDE_DRAWER_LAYER, CC_CALLBACK_1(MemberLayer::eventHideDrawerLayer, this));
 }
 
 MemberLayer::~MemberLayer()
@@ -183,6 +184,11 @@ void MemberLayer::eventUpdateMemberList(cocos2d::EventCustom *event)
     this->updateMemberList();
 }
 
+void MemberLayer::eventHideDrawerLayer(cocos2d::EventCustom *event)
+{
+    this->moveSearchDrawerLayer();
+}
+
 
 
 
@@ -195,10 +201,14 @@ void MemberLayer::moveSearchDrawerLayer()
     if (this->isShowingSearchDrawerLayer)
     {
         moveWidth  = -this->searchDrawerLayer->getContentSize().width / 2.0f;
+        this->searchDrawerLayer->hideLayer();
+        this->tabNode->setTabEnabled(true);
     }
     else
     {
         moveWidth  = this->searchDrawerLayer->getContentSize().width / 2.0f;
+        this->searchDrawerLayer->showLayer();
+        this->tabNode->setTabEnabled(false);
     }
     
     this->isShowingSearchDrawerLayer = !this->isShowingSearchDrawerLayer;

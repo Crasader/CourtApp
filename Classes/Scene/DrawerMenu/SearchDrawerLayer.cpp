@@ -57,6 +57,11 @@ bool SearchDrawerLayer::init()
     
     auto panel = mainLayer->getChildByName<ui::Layout *>("Panel");
     
+    // ボタン
+    hideLayerButton = panel->getChildByName<ui::Button *>("ButtonHideLayer");
+    hideLayerButton->setVisible(false);
+    this->addButtonEvent(hideLayerButton, ButtonTag::HideLayer);
+    
     // ソート
     auto sortPanel = panel->getChildByName<ui::Layout *>("PanelSort");
     syllabaryCheckBox = sortPanel->getChildByName<ui::CheckBox *>("CheckBoxSortSyllabary");
@@ -234,4 +239,36 @@ void SearchDrawerLayer::pushedCheckBox(cocos2d::Ref *pSender, cocos2d::ui::Check
 std::string SearchDrawerLayer::getSearchText()
 {
     return std::string(this->wordEditBox->getText());
+}
+
+
+
+void SearchDrawerLayer::showLayer()
+{
+    this->hideLayerButton->setVisible(true);
+}
+
+
+void SearchDrawerLayer::hideLayer()
+{
+    this->hideLayerButton->setVisible(false);
+}
+
+
+void SearchDrawerLayer::pushedButton(cocos2d::Ref *pSender, cocos2d::ui::Widget::TouchEventType type)
+{
+    if (type != ui::Widget::TouchEventType::ENDED) return;
+    
+    auto button = dynamic_cast<ui::Button *>(pSender);
+    ButtonTag tag = (ButtonTag)button->getTag();
+    
+    switch (tag) {
+        case ButtonTag::HideLayer:
+            Kyarochon::Event::sendCustomEvent(EVENT_HIDE_DRAWER_LAYER);
+            break;
+    }
+    
+    
+    
+    
 }
