@@ -182,6 +182,7 @@ void Court::resetAllHistory()
     
     // 参加者リストの表示更新
     Kyarochon::Event::sendCustomEvent(EVENT_UPDATE_PARTICIPANT_LIST);
+    Kyarochon::Event::sendCustomEvent(EVENT_UPDATE_MEMBER_LIST);
 }
     
     

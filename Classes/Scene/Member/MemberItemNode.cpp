@@ -95,6 +95,8 @@ void MemberItemNode::updateOptionText()
 
     auto panel =  mainLayer->getChildByName<ui::Layout *>("Panel");
     panel->getChildByName<ui::Text *>("TextOption")->setString(optionText);
+    
+    this->checkImage->setVisible(userInfo->isEntry);
 }
 
 
