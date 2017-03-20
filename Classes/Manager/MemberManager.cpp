@@ -549,15 +549,13 @@ std::vector< std::vector<UserInfo *> > Member::selectNextMatchMembers(int courtN
         maxMemberList.clear();
     }
     
-    
-    std::shuffle(entryMemberList.begin(), entryMemberList.end(), std::mt19937());
+    std::random_device rdev{};
+    std::mt19937 mt(rdev());
+    std::shuffle(entryMemberList.begin(), entryMemberList.end(), mt);
     if (entryMemberList.size() == courtNum * 4)
         entryMemberListVec = getEntryListByCourt(entryMemberList);
     else
         entryMemberListVec = getEntryListByCourt( getEntryListConsideredRelation(entryMemberList, minMemberList, courtNum * 4 - (int)entryMemberList.size()) );
-    
-    // 試合回数／ペア回数／対戦回数を更新
-//    this->addGameMemberInfo(entryMemberListVec);
     
     return entryMemberListVec;
 }
@@ -654,16 +652,22 @@ int Member::getMaxGameCount()
 }
     
     
-// 試合数／ペア数の少ない人を取得する
+// 試合数／ペア数の少ない人を取得する（再帰）
+//  entryMemberList：参加が確定した人
+//  minMemberList：参加候補者
+//  addNum：残り追加人数
 std::vector<UserInfo *> Member::getEntryListConsideredRelation(std::vector<UserInfo *> entryMemberList, std::vector<UserInfo *> minMemberList, int addNum)
 {
-    std::shuffle(entryMemberList.begin(), entryMemberList.end(), std::mt19937());
+    std::random_device rdev{};
+    std::mt19937 mt(rdev());
+    std::shuffle(entryMemberList.begin(), entryMemberList.end(), mt);
     if (addNum == 0) return entryMemberList;
     
     int minCount = INT_MAX;
     UserInfo *selectedMember = nullptr;
 
-    std::shuffle(minMemberList.begin(), minMemberList.end(), std::mt19937());
+    // 参加候補者リストの中でスコア付けを行う
+    std::shuffle(minMemberList.begin(), minMemberList.end(), mt);
     for (auto member : minMemberList)
     {
         int count = 0;
@@ -678,10 +682,10 @@ std::vector<UserInfo *> Member::getEntryListConsideredRelation(std::vector<UserI
             selectedMember = member;
         }
     }
-    
     if (!selectedMember) CCLOG("ERROR!!!");
     
     
+    // ペア数・対戦数が一番低い人が選出され、entryMemberListに追加＆minMemberListから削除
     entryMemberList.push_back(selectedMember);
     for(auto it = minMemberList.begin(); it != minMemberList.end();)
     {
@@ -700,64 +704,91 @@ std::vector<UserInfo *> Member::getEntryListConsideredRelation(std::vector<UserI
 std::vector< std::vector<UserInfo *> > Member::getEntryListByCourt(std::vector<UserInfo *> entryList)
 {
     std::vector< std::vector<UserInfo *> > entryListByCourt;
+ 
     
-    std::vector<UserInfo *> courtMembers;
-    while (entryList.size() > 0) {
-        // 各コート一人目は最初の人を持ってくる
-        if (courtMembers.size() == 0)
+    // 最もペアになった回数が少ない人を取得
+    auto getMemberFunc = [](UserInfo *baseMember, std::vector<UserInfo *> memberList)
+    {
+        int minCount = INT_MAX;
+        UserInfo *selected = nullptr;
+        for (auto member : memberList)
         {
-            courtMembers.push_back(entryList.at(0));
-            entryList.erase(entryList.begin());
-            continue;
-        }
-        
-        UserInfo *newMember = nullptr;
-        int minScore = INT_MAX;
-        for (auto member : entryList)
-        {
-            // Aとペア回数の少ない人
-            int currentScore = INT_MAX;
-            if (courtMembers.size() == 1)
-            {
-                currentScore = member->pairCountArray[courtMembers.at(0)->id] * PAIR_COUNT_WEIGHT;
-            }
-            // A,Bと対戦回数の少ない人
-            else if (courtMembers.size() == 2)
-            {
-                currentScore = member->fightCountArray[courtMembers.at(0)->id] * FIGHT_COUNT_WEIGHT
-                             + member->fightCountArray[courtMembers.at(1)->id] * FIGHT_COUNT_WEIGHT;
-            }
-            // A,Bと対戦回数の少ないかつCとペア回数の少ない人
-            else
-            {
-                currentScore = member->fightCountArray[courtMembers.at(0)->id] * FIGHT_COUNT_WEIGHT
-                             + member->fightCountArray[courtMembers.at(1)->id] * FIGHT_COUNT_WEIGHT
-                             + member->pairCountArray[courtMembers.at(2)->id]  * PAIR_COUNT_WEIGHT;
-            }
+            if (member == baseMember) continue;
             
-            if (minScore > currentScore)
+            int count = baseMember->pairCountArray[member->id];
+            if (minCount > count)
             {
-                minScore = currentScore;
-                newMember = member;
+                minCount = count;
+                selected = member;
             }
         }
+        return selected;
+    };
+    
+    
+    // 最も戦った回数が少ないペアを取得
+    auto getPairFunc = [](std::pair<UserInfo *, UserInfo *> basePair, std::vector<std::pair<UserInfo *, UserInfo *>> pairList)
+    {
+        if (pairList.size() == 1) return pairList.front();
         
-        
-        // 元のリストから削除
-        for (auto it = entryList.begin(); it != entryList.end();)
+        int minCount = INT_MAX;
+        std::pair<UserInfo *, UserInfo *> selected;
+        for (auto pair : pairList)
         {
-            if ((*it) == newMember)
+            int count = basePair.first->fightCountArray[pair.first->id] +
+                        basePair.first->fightCountArray[pair.second->id] +
+                        basePair.second->fightCountArray[pair.first->id] +
+                        basePair.second->fightCountArray[pair.second->id];
+            if (minCount > count)
+            {
+                minCount = count;
+                selected = pair;
+            }
+        }
+        return selected;
+    };
+    
+    
+    
+    // 組んだ回数の少ない人同士のペアのリストを生成
+    std::vector<std::pair<UserInfo *, UserInfo *>> pairList;
+    while (!entryList.empty())
+    {
+        auto base = entryList.front();
+        entryList.erase(entryList.begin());
+
+        auto selected = getMemberFunc(base, entryList);
+        pairList.emplace_back(base, selected);
+        
+        for (auto it = entryList.begin(); it != entryList.end(); )
+        {
+            if ((*it) == selected)
                 it = entryList.erase(it);
             else
                 ++it;
         }
+    }
+
+    // 戦った回数の少ないペア同士を戦わせる
+    while (!pairList.empty())
+    {
+        auto base = pairList.front();
+        pairList.erase(pairList.begin());
         
-        // 4人に達したらコート毎のリストに追加
-        courtMembers.push_back(newMember);
-        if (courtMembers.size() == 4)
+        auto selected = getPairFunc(base, pairList);
+        std::vector<UserInfo *> tempList;
+        tempList.push_back(base.first);
+        tempList.push_back(base.second);
+        tempList.push_back(selected.first);
+        tempList.push_back(selected.second);
+        entryListByCourt.push_back(tempList);
+        
+        for (auto it = pairList.begin(); it != pairList.end(); )
         {
-            entryListByCourt.push_back(courtMembers);
-            courtMembers.clear();
+            if ((*it) == selected)
+                it = pairList.erase(it);
+            else
+                ++it;
         }
     }
     
