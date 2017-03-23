@@ -15,14 +15,14 @@ USING_NS_CC;
 using namespace cocostudio;
 
 SettingLayer::SettingLayer()
-:courtNumButton1(nullptr)
-,courtNumButton2(nullptr)
-,courtNumButton3(nullptr)
-,courtNumButton4(nullptr)
-,courtNumButton5(nullptr)
-,courtNumButton6(nullptr)
-,showWinNumButton(nullptr)
-,hideWinNumButton(nullptr)
+:courtNumText(nullptr)
+,courtNumSlider(nullptr)
+,shuffleRandomPairCheckBox(nullptr)
+,shuffleRandomPointCheckBox(nullptr)
+,allocationAllCheckBox(nullptr)
+,allocationByLevelCheckBox(nullptr)
+,showWinNumCheckBox(nullptr)
+,hideWinNumCheckBox(nullptr)
 {
 }
 
@@ -48,95 +48,128 @@ bool SettingLayer::init()
     if ( !CsbLayerBase::init(csbName) ) return false;
 
     auto scrollView = mainLayer->getChildByName<ui::ScrollView *>("ScrollView");
-    courtNumButton1 = dynamic_cast<ui::Button *>(scrollView->getChildByName("ButtonCourt1"));
-    courtNumButton2 = dynamic_cast<ui::Button *>(scrollView->getChildByName("ButtonCourt2"));
-    courtNumButton3 = dynamic_cast<ui::Button *>(scrollView->getChildByName("ButtonCourt3"));
-    courtNumButton4 = dynamic_cast<ui::Button *>(scrollView->getChildByName("ButtonCourt4"));
-    courtNumButton5 = dynamic_cast<ui::Button *>(scrollView->getChildByName("ButtonCourt5"));
-    courtNumButton6 = dynamic_cast<ui::Button *>(scrollView->getChildByName("ButtonCourt6"));
-    showWinNumButton = dynamic_cast<ui::Button *>(scrollView->getChildByName("ButtonShowWinNum"));
-    hideWinNumButton = dynamic_cast<ui::Button *>(scrollView->getChildByName("ButtonHideWinNum"));
     
-    this->addButtonEvent(courtNumButton1, ButtonTag::Court1);
-    this->addButtonEvent(courtNumButton2, ButtonTag::Court2);
-    this->addButtonEvent(courtNumButton3, ButtonTag::Court3);
-    this->addButtonEvent(courtNumButton4, ButtonTag::Court4);
-    this->addButtonEvent(courtNumButton5, ButtonTag::Court5);
-    this->addButtonEvent(courtNumButton6, ButtonTag::Court6);
-    this->addButtonEvent(showWinNumButton, ButtonTag::ShowWinNum);
-    this->addButtonEvent(hideWinNumButton, ButtonTag::HideWinNum);
-    this->addButtonEvent(dynamic_cast<ui::Button *>(scrollView->getChildByName("ButtonShowWinList")), ButtonTag::ShowWinList);
-    this->addButtonEvent(dynamic_cast<ui::Button *>(scrollView->getChildByName("ButtonResetWinNum")), ButtonTag::ResetWinNum);
-    this->addButtonEvent(dynamic_cast<ui::Button *>(scrollView->getChildByName("ButtonResetGameHistory")), ButtonTag::ResetHistory);
+    // コート関連
+    auto courtPanel = scrollView->cocos2d::Node::getChildByName<ui::Layout *>("CourtPanel");
+    courtNumText = courtPanel->getChildByName<ui::Text *>("TextCourtNum");
+    courtNumSlider = courtPanel->getChildByName<ui::Slider *>("SliderCourtNum");
+    shuffleRandomPairCheckBox = courtPanel->getChildByName<ui::CheckBox *>("CheckBoxShuffleRadomPair");
+    shuffleRandomPointCheckBox = courtPanel->getChildByName<ui::CheckBox *>("CheckBoxShuffleRandomPoint");
+    allocationAllCheckBox = courtPanel->getChildByName<ui::CheckBox *>("CheckBoxAllocationAll");
+    allocationByLevelCheckBox = courtPanel->getChildByName<ui::CheckBox *>("CheckBoxAllocationByCourt");
     
-    this->updateCourtNumButton();
-    this->updateWinNumButton();
+    this->addSliderEvent(courtNumSlider, SliderTag::CourtNum);
+    this->addCheckBoxEvent(shuffleRandomPairCheckBox, CheckBoxTag::ShuffleRandomPair);
+    this->addCheckBoxEvent(shuffleRandomPointCheckBox, CheckBoxTag::ShuffleRandomPoint);
+    this->addCheckBoxEvent(allocationAllCheckBox, CheckBoxTag::AllocationAll);
+    this->addCheckBoxEvent(allocationByLevelCheckBox, CheckBoxTag::AllocationByLevel);
+    
+    
+    // 戦績関連
+    auto historyPanel = scrollView->cocos2d::Node::getChildByName<ui::Layout *>("HistoryPanel");
+    showWinNumCheckBox = historyPanel->getChildByName<ui::CheckBox *>("CheckBoxShowWinNum");
+    hideWinNumCheckBox = historyPanel->getChildByName<ui::CheckBox *>("CheckBoxHideWinNum");
+    
+    this->addCheckBoxEvent(showWinNumCheckBox, CheckBoxTag::ShowWinNum);
+    this->addCheckBoxEvent(hideWinNumCheckBox, CheckBoxTag::HideWinNum);
+    this->addButtonEvent(dynamic_cast<ui::Button *>(historyPanel->getChildByName("ButtonShowWinList")), ButtonTag::ShowWinList);
+    this->addButtonEvent(dynamic_cast<ui::Button *>(historyPanel->getChildByName("ButtonResetWinNum")), ButtonTag::ResetWinNum);
+    this->addButtonEvent(dynamic_cast<ui::Button *>(historyPanel->getChildByName("ButtonResetGameHistory")), ButtonTag::ResetHistory);
+    
+    // 表示更新
+    this->updateCourtNumSlider();
+    this->updateCheckBox();
     
     return true;
 }
 
 
-void SettingLayer::updateCourtNumButton()
+void SettingLayer::updateCourtNumSlider()
 {
     int courtNum = Manager::Court::getInstance()->getUseCourtNum();
-    bool enableCourt1 = true;
-    bool enableCourt2 = true;
-    bool enableCourt3 = true;
-    bool enableCourt4 = true;
-    bool enableCourt5 = true;
-    bool enableCourt6 = true;
-    
-    switch (courtNum) {
-        case 1: enableCourt1 = false; break;
-        case 2: enableCourt2 = false; break;
-        case 3: enableCourt3 = false; break;
-        case 4: enableCourt4 = false; break;
-        case 5: enableCourt5 = false; break;
-        case 6: enableCourt6 = false; break;
-    }
-    
-    this->setButtonEnabled(courtNumButton1, enableCourt1);
-    this->setButtonEnabled(courtNumButton2, enableCourt2);
-    this->setButtonEnabled(courtNumButton3, enableCourt3);
-    this->setButtonEnabled(courtNumButton4, enableCourt4);
-    this->setButtonEnabled(courtNumButton5, enableCourt5);
-    this->setButtonEnabled(courtNumButton6, enableCourt6);
+    this->setSliderValue(this->courtNumSlider, MIN_COURT_NUM, MAX_COURT_NUM, courtNum);
+    this->courtNumText->setString(StringUtils::toString(courtNum));
 }
 
-void SettingLayer::updateWinNumButton()
+void SettingLayer::updateCheckBox()
 {
+    // シャッフルタイプ
+    auto shuffleType = Manager::Member::getInstance()->getShuffleType();
+    if (shuffleType == ShuffleType::RandomPair)
+    {
+        this->shuffleRandomPairCheckBox->setSelected(true);
+        this->shuffleRandomPointCheckBox->setSelected(false);
+    }
+    else
+    {
+        this->shuffleRandomPairCheckBox->setSelected(false);
+        this->shuffleRandomPointCheckBox->setSelected(true);
+    }
+    
+    // 振り分けタイプ
+    auto allocationType = Manager::Member::getInstance()->getAllocationType();
+    if (allocationType == AllocationType::All)
+    {
+        this->allocationAllCheckBox->setSelected(true);
+        this->allocationByLevelCheckBox->setSelected(false);
+    }
+    else
+    {
+        this->allocationAllCheckBox->setSelected(false);
+        this->allocationByLevelCheckBox->setSelected(true);
+    }
+    
+    // 勝敗数表示
     bool showWinNum = Manager::Court::getInstance()->shouldShowWinNum();
-    this->setButtonEnabled(showWinNumButton, !showWinNum);
-    this->setButtonEnabled(hideWinNumButton, showWinNum);
+    this->showWinNumCheckBox->setSelected(showWinNum);
+    this->hideWinNumCheckBox->setSelected(!showWinNum);
+    
+    
+}
+
+void SettingLayer::changedSliderValue(cocos2d::Ref *pSender, cocos2d::ui::Slider::EventType type)
+{
+    auto slider = dynamic_cast<ui::Slider *>(pSender);
+    SliderTag tag = (SliderTag)slider->getTag();
+    switch (tag) {
+        case SliderTag::CourtNum:
+            Manager::Court::getInstance()->setUseCourtNum(this->getSliderValueInt(slider, MIN_COURT_NUM, MAX_COURT_NUM));
+            break;
+    }
+    this->updateCourtNumSlider();
 }
 
 void SettingLayer::pushedButton(Ref *pSender, ui::Widget::TouchEventType type)
 {
     if (type != ui::Widget::TouchEventType::ENDED) return;
     
-    auto courtManager  = Manager::Court::getInstance();
-    auto memberManager = Manager::Member::getInstance();
-    
     auto button = dynamic_cast<ui::Button *>(pSender);
     ButtonTag tag = (ButtonTag)button->getTag();
     switch (tag) {
-        case ButtonTag::Court1: courtManager->setUsecourtNum(1); break;
-        case ButtonTag::Court2: courtManager->setUsecourtNum(2); break;
-        case ButtonTag::Court3: courtManager->setUsecourtNum(3); break;
-        case ButtonTag::Court4: courtManager->setUsecourtNum(4); break;
-        case ButtonTag::Court5: courtManager->setUsecourtNum(5); break;
-        case ButtonTag::Court6: courtManager->setUsecourtNum(6); break;
-        case ButtonTag::ShowWinNum:  courtManager->setShouldShowWinNum(true);  break;
-        case ButtonTag::HideWinNum:  courtManager->setShouldShowWinNum(false); break;
-        case ButtonTag::ResetWinNum: this->showResetWinNumConfirm();                 break;
-            
-            
+        case ButtonTag::ResetWinNum: this->showResetWinNumConfirm(); break;
         case ButtonTag::ShowWinList: Kyarochon::Event::sendCustomEvent(EVENT_SHOW_WIN_LIST); return;
         case ButtonTag::ResetHistory: this->showResetHistoryConfirm(); return;
     }
+}
+
+void SettingLayer::pushedCheckBox(cocos2d::Ref *pSender, cocos2d::ui::CheckBox::EventType type)
+{
+    if (type == cocos2d::ui::CheckBox::EventType::UNSELECTED) return;
     
-    this->updateCourtNumButton();
-    this->updateWinNumButton();
+    auto courtManager  = Manager::Court::getInstance();
+    auto memberManager = Manager::Member::getInstance();
+
+    auto checkBox = dynamic_cast<ui::CheckBox *>(pSender);
+    CheckBoxTag tag = (CheckBoxTag)checkBox->getTag();
+    switch (tag) {
+        case CheckBoxTag::ShuffleRandomPair: memberManager->setShuffleType(ShuffleType::RandomPair); break;
+        case CheckBoxTag::ShuffleRandomPoint: memberManager->setShuffleType(ShuffleType::RandomPoint); break;
+        case CheckBoxTag::AllocationAll: memberManager->setAllocationType(AllocationType::All); break;
+        case CheckBoxTag::AllocationByLevel: memberManager->setAllocationType(AllocationType::ByLevel); break;
+        case CheckBoxTag::ShowWinNum: courtManager->setShouldShowWinNum(true); break;
+        case CheckBoxTag::HideWinNum: courtManager->setShouldShowWinNum(false); break;
+    }
+    this->updateCheckBox();
 }
 
 void SettingLayer::showResetWinNumConfirm()

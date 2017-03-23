@@ -13,21 +13,29 @@
 
 class SettingLayer : public CsbLayerBase
 {
+    enum SliderTag
+    {
+        CourtNum,
+    };
+    
     enum ButtonTag
     {
-        Court1,
-        Court2,
-        Court3,
-        Court4,
-        Court5,
-        Court6,
-        ShowWinNum,
-        HideWinNum,
         ShowWinList,
         ResetWinNum,
         ResetHistory,
     };
 
+    enum CheckBoxTag
+    {
+        ShuffleRandomPair,
+        ShuffleRandomPoint,
+        AllocationAll,
+        AllocationByLevel,
+        ShowWinNum,
+        HideWinNum,
+    };
+    
+    
     
 public:
     static SettingLayer *create();
@@ -37,24 +45,31 @@ protected:
     virtual ~SettingLayer();
     bool init() override;
     
-    // ボタンイベント
+    // UIイベント
+    virtual void changedSliderValue(cocos2d::Ref *pSender, cocos2d::ui::Slider::EventType type) override;
     virtual void pushedButton(cocos2d::Ref *pSender, cocos2d::ui::Widget::TouchEventType type) override;
+    virtual void pushedCheckBox(cocos2d::Ref *pSender, cocos2d::ui::CheckBox::EventType type) override;
+    
     
     // スクロールビューを初期化
 //    virtual void initScrollView(int itemNum);
 
 private:
-    cocos2d::ui::Button *courtNumButton1;
-    cocos2d::ui::Button *courtNumButton2;
-    cocos2d::ui::Button *courtNumButton3;
-    cocos2d::ui::Button *courtNumButton4;
-    cocos2d::ui::Button *courtNumButton5;
-    cocos2d::ui::Button *courtNumButton6;
-    cocos2d::ui::Button *showWinNumButton;
-    cocos2d::ui::Button *hideWinNumButton;
     
-    void updateCourtNumButton();
-    void updateWinNumButton();
+    // コート関連
+    cocos2d::ui::Text *courtNumText;
+    cocos2d::ui::Slider *courtNumSlider;
+    cocos2d::ui::CheckBox *shuffleRandomPairCheckBox;
+    cocos2d::ui::CheckBox *shuffleRandomPointCheckBox;
+    cocos2d::ui::CheckBox *allocationAllCheckBox;
+    cocos2d::ui::CheckBox *allocationByLevelCheckBox;
+    
+    // 戦績関連
+    cocos2d::ui::CheckBox *showWinNumCheckBox;
+    cocos2d::ui::CheckBox *hideWinNumCheckBox;
+    
+    void updateCourtNumSlider();
+    void updateCheckBox();
     
     void showResetWinNumConfirm();
     void showResetHistoryConfirm();

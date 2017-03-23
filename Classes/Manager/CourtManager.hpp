@@ -92,8 +92,8 @@ namespace Manager {
         
         
         // 試合に使うコート数取得／設定
-        int getUseCourtNum(){return useCourtNum;}
-        void setUsecourtNum(int courtNum){this->useCourtNum = courtNum;}
+        void setUseCourtNum(int courtNum);
+        int getUseCourtNum();
 
         
         // ********** 勝敗情報の更新 **********

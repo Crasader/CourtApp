@@ -50,6 +50,8 @@ void Member::initialize()
     }
     
     this->sortType = (SortType)Kyarochon::UserDefault::getInt(UD_KEY_SORT_TYPE);
+    this->shuffleType = (ShuffleType)Kyarochon::UserDefault::getInt(UD_KEY_SHUFFLE_TYPE);
+    this->allocationType = (AllocationType)Kyarochon::UserDefault::getInt(UD_KEY_ALLOCATION_TYPE);
     this->filterDays = Kyarochon::UserDefault::getInt(UD_KEY_FILTER_DAYS);
     
     filterGenderVec.clear();
@@ -624,6 +626,38 @@ void Member::updateLastDateFilter(int days)
     this->filterDays = (days == this->filterDays) ? 0 : days;
 }
     
+    
+// ソート、シャッフルタイプを設定／取得
+void Member::setSortType(SortType type)
+{
+    this->sortType = type;
+    Kyarochon::UserDefault::setInt(UD_KEY_SORT_TYPE, (int)type);
+}
+SortType Member::getSortType()
+{
+    return this->sortType;
+}
+    
+void Member::setShuffleType(ShuffleType type)
+{
+    this->shuffleType = type;
+    Kyarochon::UserDefault::setInt(UD_KEY_SHUFFLE_TYPE, (int)type);
+}
+ShuffleType Member::getShuffleType()
+{
+    return this->shuffleType;
+}
+    
+void Member::setAllocationType(AllocationType type)
+{
+    this->allocationType = type;
+    Kyarochon::UserDefault::setInt(UD_KEY_ALLOCATION_TYPE, (int)type);
+}
+AllocationType Member::getAllocationType()
+{
+    return this->allocationType;
+}
+
     
 #pragma mark - ********** 試合メンバー決定補助用メソッド **********
     

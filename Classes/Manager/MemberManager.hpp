@@ -92,8 +92,8 @@ namespace Manager {
         // ********** ソート／検索 **********
         
         // ソート順設定／取得
-        void setSortType(SortType type){this->sortType = type; }
-        SortType getSortType(){return this->sortType;}
+        void setSortType(SortType type);
+        SortType getSortType();
         
         // 検索条件変更
         void updateGenderFilter(Gender gender);
@@ -113,6 +113,10 @@ namespace Manager {
     private:
         // ********** 試合メンバー決定補助用メソッド **********
         
+        // シャッフルタイプ
+        ShuffleType shuffleType = ShuffleType::RandomPair;
+        AllocationType allocationType = AllocationType::All;
+        
         // 試合回数の取得
         int getMinGameCount();
         int getMaxGameCount();
@@ -127,6 +131,13 @@ namespace Manager {
         
     public:
         // ********** 試合情報の追加／削除 **********
+        
+        // シャッフルタイプ設定／取得
+        void setShuffleType(ShuffleType type);
+        ShuffleType getShuffleType();
+        void setAllocationType(AllocationType type);
+        AllocationType getAllocationType();
+        
         
         // 組み合わせ情報を追加
         void addGameMemberInfoList(std::vector< std::vector<UserInfo *> > entryMemberListVec);

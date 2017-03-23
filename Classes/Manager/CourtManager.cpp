@@ -211,6 +211,17 @@ CourtInfo *Court::getCourtInfo(int courtId)
     
     return nullptr;
 }
+
+void Court::setUseCourtNum(int courtNum)
+{
+    this->useCourtNum = courtNum;
+    Kyarochon::UserDefault::setInt(UD_KEY_COURT_NUM, courtNum);
+}
+
+int Court::getUseCourtNum()
+{
+    return useCourtNum;
+}
     
     
     

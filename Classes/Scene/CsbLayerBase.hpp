@@ -51,6 +51,12 @@ public:
     // EditBox作成
     virtual cocos2d::ui::EditBox *makeEditBox(cocos2d::Vec2 pos, std::string placeHolder, cocos2d::Node *parent = nullptr);
 
+    // Slider
+    virtual void addSliderEvent(cocos2d::ui::Slider *slider, int tag);
+    virtual void changedSliderValue(cocos2d::Ref *pSender, cocos2d::ui::Slider::EventType type);
+    virtual float getSliderValueFloat(cocos2d::ui::Slider *slider, float min, float max);
+    virtual int getSliderValueInt(cocos2d::ui::Slider *slider, float min, float max);
+    virtual void setSliderValue(cocos2d::ui::Slider *slider, float min, float max, float val);
 protected:
     //  ロングタップ用
     cocos2d::Vec2 touchStartPos;

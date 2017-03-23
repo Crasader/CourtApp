@@ -66,6 +66,8 @@ bool AppDelegate::applicationDidFinishLaunching() {
     // 値の初期化
     Kyarochon::UserDefault::initInt(UD_KEY_COURT_NUM, 1);
     Kyarochon::UserDefault::initInt(UD_KEY_SORT_TYPE, (int)SortType::Syllabary);
+    Kyarochon::UserDefault::initInt(UD_KEY_SHUFFLE_TYPE, (int)ShuffleType::RandomPair);
+    Kyarochon::UserDefault::initInt(UD_KEY_ALLOCATION_TYPE, (int)AllocationType::All);
     Kyarochon::UserDefault::initBool(UD_KEY_FILTER_MALE, true);
     Kyarochon::UserDefault::initBool(UD_KEY_FILTER_FEMALE, true);
     Kyarochon::UserDefault::initBool(UD_KEY_FILTER_TRAINING, true);

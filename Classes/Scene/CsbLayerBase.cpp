@@ -161,3 +161,36 @@ ui::EditBox *CsbLayerBase::makeEditBox(Vec2 pos, std::string placeHolder, Node *
     
     return editBox;
 }
+
+
+
+#pragma mark - Slider
+void CsbLayerBase::addSliderEvent(cocos2d::ui::Slider *slider, int tag)
+{
+    slider->setTag(tag);
+    slider->addEventListener(CC_CALLBACK_2(CsbLayerBase::changedSliderValue, this));
+}
+
+void CsbLayerBase::changedSliderValue(cocos2d::Ref *pSender, cocos2d::ui::Slider::EventType type)
+{
+    auto slider = dynamic_cast<ui::Slider *>(pSender);
+    CCLOG("changedSliderPercent:%d", slider->getPercent());
+}
+
+float CsbLayerBase::getSliderValueFloat(cocos2d::ui::Slider *slider, float min, float max)
+{
+    return min + (max - min) * (float)(slider->getPercent()) / 100.0f;
+}
+
+int CsbLayerBase::getSliderValueInt(cocos2d::ui::Slider *slider, float min, float max)
+{
+    return (int)(min + (max - min) * (float)(slider->getPercent()) / 100.0f);
+}
+
+void CsbLayerBase::setSliderValue(cocos2d::ui::Slider *slider, float min, float max, float val)
+{
+    float percent = (val - min) / (max - min) * 100.0f;
+    slider->setPercent((int)percent);
+}
+
+

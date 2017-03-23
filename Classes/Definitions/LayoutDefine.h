@@ -29,6 +29,18 @@ enum class SortType
     LastDate,   // 参加日が新しい順
 };
 
+enum class ShuffleType
+{
+    RandomPair,     // 同じ人とペアが偏らない
+    RandomPoint,    // レベルが均等になる
+};
+
+enum class AllocationType
+{
+    All,        // すべてごちゃまぜ
+    ByLevel,    // レベル別でコートを分ける
+};
+
 
 // UI／イベント
 #define LONG_TAP_TIME (0.3f)

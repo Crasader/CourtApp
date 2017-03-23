@@ -15,6 +15,8 @@ USING_NS_CC;
 
 #define UD_KEY_COURT_NUM    "CourtNum"      // 試合に使うコート数
 #define UD_KEY_SORT_TYPE    "SortType"      // ソートタイプ
+#define UD_KEY_SHUFFLE_TYPE "ShuffleType"   // シャッフルタイプ
+#define UD_KEY_ALLOCATION_TYPE "AllocationType"   // 振り分けタイプ
 
 // 条件検索
 #define UD_KEY_FILTER_MALE     "FilterMale"     // 男性
