@@ -396,7 +396,11 @@ void Member::updateIsEntry(int id, bool isEntry)
     auto member = this->getMemberAt(id);
     if (!member) return;
     
-    member->isEntry = isEntry;
+    if (isEntry)
+        member->entryGame();
+    else
+        member->leaveGame();
+    
     Manager::DataBase::getInstance()->updateUserInfo(member);
 }
 
@@ -920,8 +924,7 @@ void Member::resetAllCount()
             member->fightCountArray[i] = 0;
             member->winCountArray[i] = 0;
         }
-        member->gameCount = 0;
-        member->isEntry = false;
+        member->leaveGame();
         
         Manager::DataBase::getInstance()->updateUserInfo(member);
     }

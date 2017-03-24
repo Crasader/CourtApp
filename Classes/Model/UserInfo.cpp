@@ -130,6 +130,23 @@ std::string UserInfo::getNickname()
 }
 
 
+// 試合参加／キャンセル
+void UserInfo::entryGame()
+{
+    this->isEntry   = true;
+    this->entryMode = EntryMode::Normal;
+    this->gameCount = 0;
+    this->checked   = false;
+}
+void UserInfo::leaveGame()
+{
+    this->isEntry   = false;
+    this->entryMode = EntryMode::Normal;
+    this->gameCount = 0;
+    this->checked   = false;
+}
+
+
 // 勝敗数
 int UserInfo::getWinCount()
 {

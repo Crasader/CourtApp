@@ -77,6 +77,10 @@ public:
     std::string getLevelText();
     std::string getNickname();
     
+    // 試合参加／キャンセル
+    void entryGame();
+    void leaveGame();
+    
     // 勝敗数
     int getWinCount();
     void addWinCount(int memberId);

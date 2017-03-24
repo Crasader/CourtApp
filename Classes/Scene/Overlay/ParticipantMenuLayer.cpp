@@ -13,9 +13,9 @@ USING_NS_CC;
 using namespace cocostudio;
 
 ParticipantMenuLayer::ParticipantMenuLayer()
-:buttonNormal(nullptr)
-,buttonEntryGame(nullptr)
-,buttonRest(nullptr)
+:checkBoxNormal(nullptr)
+,checkBoxEntryGame(nullptr)
+,checkBoxRest(nullptr)
 {
 }
 
@@ -43,22 +43,23 @@ bool ParticipantMenuLayer::init(std::vector<UserInfo *> userInfoList)
     if ( !CsbLayerBase::init(csbName) ) return false;
     
     auto panel =  mainLayer->getChildByName<ui::Layout *>("Panel");
+    this->addButtonEvent(panel->getChildByName<ui::Button *>("ButtonTransparent"),  ButtonTag::Close);
+
     auto panelWindow = panel->getChildByName<ui::Layout *>("PanelWindow");
     
     std::string title = (userInfoList.size() == 1) ? userInfoList.front()->name : "まとめて編集";
     panelWindow->getChildByName<ui::Text *>("TextTitle")->setString(title);
     
-    buttonNormal = panelWindow->getChildByName<ui::Button *>("ButtonNormal");
-    buttonEntryGame = panelWindow->getChildByName<ui::Button *>("ButtonEntryGame");
-    buttonRest = panelWindow->getChildByName<ui::Button *>("ButtonRest");
-    
-    this->addButtonEvent(buttonNormal,    ButtonTag::EntryModeNormal);
-    this->addButtonEvent(buttonEntryGame, ButtonTag::EntryModeEntryGame);
-    this->addButtonEvent(buttonRest,      ButtonTag::EntryModeRest);
+    checkBoxNormal = panelWindow->getChildByName<ui::CheckBox *>("CheckBoxNormal");
+    checkBoxEntryGame = panelWindow->getChildByName<ui::CheckBox *>("CheckBoxEntryGame");
+    checkBoxRest = panelWindow->getChildByName<ui::CheckBox *>("CheckBoxRest");
+    this->addCheckBoxEvent(checkBoxNormal,    CheckBoxTag::EntryModeNormal);
+    this->addCheckBoxEvent(checkBoxEntryGame, CheckBoxTag::EntryModeEntryGame);
+    this->addCheckBoxEvent(checkBoxRest,      CheckBoxTag::EntryModeRest);
     this->addButtonEvent(panelWindow->getChildByName<ui::Button *>("ButtonPlusGameNum"),  ButtonTag::PlusGameNum);
     this->addButtonEvent(panelWindow->getChildByName<ui::Button *>("ButtonMinusGameNum"), ButtonTag::MinusGameNum);
+    this->addButtonEvent(panelWindow->getChildByName<ui::Button *>("ButtonCancelEntry"), ButtonTag::CancelEntry);
     this->addButtonEvent(panelWindow->getChildByName<ui::Button *>("ButtonClose"),        ButtonTag::Close);
-    
     
     auto historyButton = panelWindow->getChildByName<ui::Button *>("ButtonShowGameHistory");
     if (userInfoList.size() == 1)
@@ -71,17 +72,17 @@ bool ParticipantMenuLayer::init(std::vector<UserInfo *> userInfoList)
         historyButton->setVisible(false);
     }
     
-    this->updateEntryButtons();
+    this->updateEntryCheckBoxes();
     
     return true;
 }
 
 
-void ParticipantMenuLayer::updateEntryButtons()
+void ParticipantMenuLayer::updateEntryCheckBoxes()
 {
-    bool normalEnabled = true;
-    bool entryGameEnabled =true;
-    bool restEnabled = true;
+    bool normalChecked = false;
+    bool entryGameChecked = false;
+    bool restChecked = false;
     
     bool isSameMode = true;
     for (int i = 0; i < userInfoList.size() - 1; i++)
@@ -97,22 +98,20 @@ void ParticipantMenuLayer::updateEntryButtons()
     {
         switch (userInfoList.front()->entryMode) {
             case EntryMode::Normal:
-                normalEnabled = false;
+                normalChecked = true;
                 break;
             case EntryMode::EntryGame:
-                entryGameEnabled = false;
+                entryGameChecked = true;
                 break;
             case EntryMode::Rest:
-                restEnabled = false;
+                restChecked = true;
                 break;
         }
     }
     
-    this->setButtonEnabled(buttonNormal, normalEnabled);
-    this->setButtonEnabled(buttonEntryGame, entryGameEnabled);
-    this->setButtonEnabled(buttonRest, restEnabled);
-    
-    
+    checkBoxNormal->setSelected(normalChecked);
+    checkBoxEntryGame->setSelected(entryGameChecked);
+    checkBoxRest->setSelected(restChecked);
 }
 
 void ParticipantMenuLayer::pushedButton(Ref *pSender, ui::Widget::TouchEventType type)
@@ -122,16 +121,74 @@ void ParticipantMenuLayer::pushedButton(Ref *pSender, ui::Widget::TouchEventType
     auto button = dynamic_cast<ui::Button *>(pSender);
     ButtonTag tag = (ButtonTag)button->getTag();
     
+    switch (tag) {
+        case PlusGameNum:
+            this->increaseGamecount();
+            break;
+        case MinusGameNum:
+            this->decreaseGameCount();
+            break;
+        case CancelEntry:
+            this->leaveGame();
+            break;
+        case ShowHistory:
+            Kyarochon::Event::sendCustomEventWithData(EVENT_SHOW_GAME_HISTORY, userInfoList.front()->id);
+            // breakなし
+        case Close:
+            this->close();
+            return;
+    }
+}
+
+void ParticipantMenuLayer::increaseGamecount()
+{
+    for (auto userInfo :userInfoList)
+    {
+        userInfo->increaseGameCount();
+        Kyarochon::Event::sendCustomEventWithData(EVENT_UPDATE_PARTICIPANT, userInfo->id);
+    }
+}
+
+void ParticipantMenuLayer::decreaseGameCount()
+{
+    for (auto userInfo :userInfoList)
+    {
+        userInfo->decreaseGameCount();
+        Kyarochon::Event::sendCustomEventWithData(EVENT_UPDATE_PARTICIPANT, userInfo->id);
+    }
+}
+
+void ParticipantMenuLayer::leaveGame()
+{
+    std::string text = (userInfoList.size() == 1) ? userInfoList.front()->name + "さん" : "選択されたメンバー";
+    text += "を\n参加者から外します\nよろしいですか？";
+    std::function<void()> yesCallback = [this](){
+        for (auto userInfo : userInfoList)
+        {
+            userInfo->leaveGame();
+        }
+        
+        // 表示更新
+        Kyarochon::Event::sendCustomEvent(EVENT_UPDATE_PARTICIPANT_LIST);
+        Kyarochon::Event::sendCustomEvent(EVENT_UPDATE_MEMBER_LIST);
+        
+        // 閉じる
+        this->close();
+    };
+    std::function<void()> noCallback  = [](){};
     
+    ConfirmInfo *info = new ConfirmInfo(text, yesCallback, noCallback);
+    Kyarochon::Event::showConfirmView(info);
+}
+
+void ParticipantMenuLayer::pushedCheckBox(cocos2d::Ref *pSender, cocos2d::ui::CheckBox::EventType type)
+{
+    auto checkBox = dynamic_cast<ui::CheckBox *>(pSender);
+    CheckBoxTag tag = (CheckBoxTag)checkBox->getTag();
+
     for (auto userInfo : userInfoList)
     {
         switch (tag) {
-            case PlusGameNum:
-                userInfo->increaseGameCount();
-                break;
-            case MinusGameNum:
-                userInfo->decreaseGameCount();
-                break;
             case EntryModeNormal:
                 userInfo->entryMode = EntryMode::Normal;
                 break;
@@ -141,18 +198,11 @@ void ParticipantMenuLayer::pushedButton(Ref *pSender, ui::Widget::TouchEventType
             case EntryModeRest:
                 userInfo->entryMode = EntryMode::Rest;
                 break;
-            case ShowHistory:
-                Kyarochon::Event::sendCustomEventWithData(EVENT_SHOW_GAME_HISTORY, userInfo->id);
-                // breakなし
-            case Close:
-                this->close();
-                return;
         }
-        
-        this->updateEntryButtons();
         Kyarochon::Event::sendCustomEventWithData(EVENT_UPDATE_PARTICIPANT, userInfo->id);
     }
-
+    
+    this->updateEntryCheckBoxes();
 }
 
 void ParticipantMenuLayer::close()

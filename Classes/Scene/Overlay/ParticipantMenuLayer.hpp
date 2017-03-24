@@ -18,16 +18,27 @@ class ParticipantMenuLayer : public CsbLayerBase
     {
         PlusGameNum,
         MinusGameNum,
+        Close,
+        CancelEntry,
+        ShowHistory,
+    };
+
+    enum CheckBoxTag
+    {
         EntryModeNormal,
         EntryModeEntryGame,
         EntryModeRest,
-        Close,
-        ShowHistory,
     };
     
     
 public:
     static ParticipantMenuLayer *create(std::vector<UserInfo *> userInfoList);
+    
+    
+private:
+    void increaseGamecount();
+    void decreaseGameCount();
+    void leaveGame();
     
     
 protected:
@@ -39,15 +50,15 @@ protected:
     std::vector<UserInfo *> userInfoList;
     
     // ボタン
-    cocos2d::ui::Button *buttonNormal;
-    cocos2d::ui::Button *buttonEntryGame;
-    cocos2d::ui::Button *buttonRest;
-    void updateEntryButtons();
+    virtual void pushedButton(Ref *pSender, ui::Widget::TouchEventType type);
 
     
-protected:
-    // ボタンイベント
-    virtual void pushedButton(cocos2d::Ref *pSender, cocos2d::ui::Widget::TouchEventType type);
+    // チェックボックス
+    cocos2d::ui::CheckBox *checkBoxNormal;
+    cocos2d::ui::CheckBox *checkBoxEntryGame;
+    cocos2d::ui::CheckBox *checkBoxRest;
+    void updateEntryCheckBoxes();
+    virtual void pushedCheckBox(cocos2d::Ref *pSender, cocos2d::ui::CheckBox::EventType type);
 
     // 閉じる
     void close();
