@@ -39,6 +39,7 @@ protected:
     
 private:
     // 新規ゲーム開始
+    bool lockedStartGame;
     void showNewCourt();
     void startNewGame();
     void cancelNewGame();

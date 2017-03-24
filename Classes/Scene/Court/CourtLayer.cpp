@@ -18,6 +18,7 @@ using namespace cocostudio;
 CourtLayer::CourtLayer()
 :rightButton(nullptr)
 ,leftButton(nullptr)
+,lockedStartGame(false)
 {
     Kyarochon::Event::setEventListener(EVENT_UPDATE_COURT_LIST, CC_CALLBACK_1(CourtLayer::eventUpdateCourtList, this));
 }
@@ -116,6 +117,9 @@ void CourtLayer::initScrollView(int itemNum)
 
 void CourtLayer::showNewCourt()
 {
+    if (this->lockedStartGame) return;
+    this->lockedStartGame = true;
+    
     auto courtManager  = Manager::Court::getInstance();
     auto memberManager = Manager::Member::getInstance();
     
@@ -152,6 +156,8 @@ void CourtLayer::showNewCourt()
 
 void CourtLayer::startNewGame()
 {
+    this->lockedStartGame = false;
+
     // 読み上げテキストを生成
     std::string speechText = this->makeSpeechText(currentSelectedMembers);
     
@@ -179,6 +185,8 @@ void CourtLayer::startNewGame()
 
 void CourtLayer::cancelNewGame()
 {
+    this->lockedStartGame = false;
+    
     // 直前のコート情報削除
     Manager::Court::getInstance()->removeCurrentCourt();
     
