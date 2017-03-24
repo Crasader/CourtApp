@@ -7,6 +7,7 @@
 //
 
 #include "ParticipantMenuLayer.hpp"
+#include "DatabaseManager.h"
 #include "MemberManager.hpp"
 
 USING_NS_CC;
@@ -207,6 +208,12 @@ void ParticipantMenuLayer::pushedCheckBox(cocos2d::Ref *pSender, cocos2d::ui::Ch
 
 void ParticipantMenuLayer::close()
 {
+    // 更新内容を保存
+    for (auto userInfo : userInfoList)
+    {
+        Manager::DataBase::getInstance()->updateUserInfo(userInfo);
+    }
+    
     // 閉じる
     this->removeFromParent();
 }
