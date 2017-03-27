@@ -74,16 +74,21 @@ namespace Manager {
         void updateIsEntry(int id, bool isEntry);
 
         // 全参加者リストを取得
-        std::vector<UserInfo *> getEntryMemberList(bool containsRest = false);
+        std::vector<UserInfo *> getEntryMemberList(bool containsRest = false, Level level = Level::Unknown);
         
         // レベル別に全参加者リストを取得
         std::vector< std::pair<std::string, std::vector<UserInfo *>> > getEntryMemberListPerLevel(bool containsRest = false);
         
         // 特定の試合数の参加者リストを取得
-        std::vector<UserInfo *> getEntryMemberListWithGameCount(int gameCount, bool containsEntryGame = false);
+        std::vector<UserInfo *> getEntryMemberListWithGameCount(int gameCount, bool containsEntryGame = false, Level level = Level::Unknown);
         
         // 次の試合に参加するメンバーを決定して取得
         std::vector< std::vector<UserInfo *> > selectNextMatchMembers(int courtNum);
+        std::vector< std::vector<UserInfo *> > selectNextMatchMembersRandomPair(int courtNum, Level level = Level::Unknown);
+        std::vector< std::vector<UserInfo *> > selectNextMatchMembersByLevel(int courtNum);
+        
+        // どのレベルのメンバーがエントリーしているか
+        std::vector<Level> getUniqueEntryLevelList();
         
         // 参加回数／最終参加日を更新
         void updateParticipantCount();
@@ -118,8 +123,8 @@ namespace Manager {
         AllocationType allocationType = AllocationType::All;
         
         // 試合回数の取得
-        int getMinGameCount();
-        int getMaxGameCount();
+        int getMinGameCount(Level level = Level::Unknown);
+        int getMaxGameCount(Level level = Level::Unknown);
         
         // 試合数／ペア数の少ない人を取得する
         std::vector<UserInfo *> getEntryListConsideredRelation(std::vector<UserInfo *> entryMemberList, std::vector<UserInfo *> minMemberList, int addNum);

@@ -49,9 +49,24 @@ bool CourtItemNode::init(CourtInfo *courtInfo)
     if ( !CsbLayerBase::init(csbName) ) return false;
     
     this->courtInfo = courtInfo;
+    auto memberList = courtInfo->memberList;
     
     // コート数
-    mainLayer->getChildByName<ui::Text *>("TextCourtNum")->setString(StringUtils::format("No.%d", courtInfo->courtNum + 1));
+    std::string title = StringUtils::format("No.%d", courtInfo->courtNum + 1);
+    bool isSameLevel = true;
+    for (int i = 0; i < memberList.size() - 1; i++)
+    {
+        if (memberList.at(i)->level != memberList.at(i + 1)->level)
+        {
+            isSameLevel = false;
+            break;
+        }
+    }
+    if (isSameLevel)
+    {
+        title += " " + courtInfo->memberList.front()->getLevelText();
+    }
+    mainLayer->getChildByName<ui::Text *>("TextCourtNum")->setString(title);
     
     // パネル
     auto panel =  mainLayer->getChildByName<ui::Layout *>("Panel");
@@ -60,8 +75,7 @@ bool CourtItemNode::init(CourtInfo *courtInfo)
     // メンバー
     int num = 0;
     
-    float serverTitleHeight = 40.0f;
-    for (auto member : courtInfo->memberList)
+    for (auto member : memberList)
     {
         auto memberItemNode = CourtMemberItemNode::create(courtInfo->id, member, num);
         float x = ((float)(num / 2) + 0.5f) * COURT_MEMBER_ITEM_WIDTH;

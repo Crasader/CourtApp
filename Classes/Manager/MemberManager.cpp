@@ -405,12 +405,14 @@ void Member::updateIsEntry(int id, bool isEntry)
 }
 
 // 全参加者リストを取得
-std::vector<UserInfo *> Member::getEntryMemberList(bool containsRest)
+std::vector<UserInfo *> Member::getEntryMemberList(bool containsRest, Level level)
 {
     std::vector<UserInfo *> entryList;
     for (auto member : this->memberList)
     {
         if (containsRest && member->entryMode == EntryMode::Rest) continue;
+        if (level != Level::Unknown && member->level != level) continue;
+        
         
         // 参加しているメンバーのみ取得
         if (member->isEntry) entryList.push_back(member);
@@ -455,11 +457,13 @@ std::vector<UserInfo *> Member::getEntryMemberList(bool containsRest)
     
     
 // 特定の試合数の参加者リストを取得
-std::vector<UserInfo *> Member::getEntryMemberListWithGameCount(int gameCount, bool containsEntryGame)
+std::vector<UserInfo *> Member::getEntryMemberListWithGameCount(int gameCount, bool containsEntryGame, Level level)
 {
     std::vector<UserInfo *> entryList;
     for (auto member : this->memberList)
     {
+        if (level != Level::Unknown && member->level != level) continue;
+        
         // 参加 ＆ 休憩モードじゃない ＆ gameCountと同じ試合回数
         bool shouldEntry = member->isEntry && member->entryMode != EntryMode::Rest && member->gameCount == gameCount;
         
@@ -482,10 +486,130 @@ std::vector<UserInfo *> Member::getEntryMemberListWithGameCount(int gameCount, b
 std::vector< std::vector<UserInfo *> > Member::selectNextMatchMembers(int courtNum)
 {
     std::vector< std::vector<UserInfo *> > entryMemberListVec;
-    std::vector<UserInfo *> entryMemberList;
     
     bool containsRest = true;
     int entryMemberNum = (int)this->getEntryMemberList(containsRest).size();
+    
+    // 参加者が4人以下なら試合できない
+    if (entryMemberNum < 4)
+    {
+        Kyarochon::Event::showAlertView("参加者が4人に達していません");
+        return entryMemberListVec;
+    }
+    
+    
+    switch (this->allocationType) {
+        // 全部
+        case AllocationType::All:
+            entryMemberListVec = this->selectNextMatchMembersRandomPair(courtNum);
+            break;
+            
+            
+        // レベル別にコートを分ける
+        case AllocationType::ByLevel:
+        {
+            std::function< std::vector<std::pair<Level, int>>(int, std::vector<std::pair<Level, int>> &) > selectCourtNumFunc =
+            [&](int courtNum, std::vector<std::pair<Level, int>> &courtNumByLevel)
+            {
+                if (courtNum <= 0) return courtNumByLevel;
+                
+                Level selectedLevel = Level::Unknown;
+                float minAverage = FLT_MAX;
+                for (auto courtNumPair : courtNumByLevel)
+                {
+                    Level level = courtNumPair.first;
+                    int courtNumByLevel = courtNumPair.second;
+                    
+                    bool containsRest = true;
+                    auto entryList = this->getEntryMemberList(containsRest, level);
+                    if (entryList.size() - courtNumByLevel * 4 < 4) continue;
+                    
+                    // 使用予定のコート数×4だけカウントに余分にプラスする
+                    float averageCount = courtNumByLevel * 4;
+                    for (auto member : entryList)
+                    {
+                        averageCount += member->gameCount;
+                    }
+                    averageCount /= (float)entryList.size();
+                    
+                    // 平均試合回数が少ないレベルが優先される
+                    if (minAverage > averageCount)
+                    {
+                        minAverage = averageCount;
+                        selectedLevel = level;
+                    }
+                }
+                
+                // 選ばれたレベルの使用コート数+1
+                for (auto &courtNumPair : courtNumByLevel)
+                {
+                    if (courtNumPair.first == selectedLevel)
+                    {
+                        courtNumPair.second++;
+                        break;
+                    }
+                }
+                
+                // 使用コート数-1して再帰
+                return selectCourtNumFunc(courtNum - 1, courtNumByLevel);
+            };
+            
+            
+            
+            // レベル別の平均試合回数を取得
+            std::vector<std::pair<Level, int>> courtNumByLevel;
+            std::vector<Level> uniqueEntryLevelList = this->getUniqueEntryLevelList();
+            for (auto level : uniqueEntryLevelList)
+            {
+                courtNumByLevel.emplace_back(level, 0);
+            }
+            selectCourtNumFunc(courtNum, courtNumByLevel);
+            
+            for (auto courtPair : courtNumByLevel)
+            {
+                auto result = this->selectNextMatchMembersRandomPair(courtPair.second, courtPair.first);
+                if (!result.empty())
+                {
+                    entryMemberListVec.insert(entryMemberListVec.end(), result.begin(), result.end());
+                }
+            }
+            
+            break;
+        }
+
+    }
+    
+    return entryMemberListVec;
+}
+
+    
+std::vector<Level> Member::getUniqueEntryLevelList()
+{
+    bool containsRest = true;
+    auto entryMemberList = this->getEntryMemberList(containsRest);
+    std::vector<Level> levelList;
+    for (auto member : entryMemberList)
+    {
+        levelList.push_back(member->level);
+    }
+    std::sort(levelList.begin(), levelList.end());
+    levelList.erase(std::unique(levelList.begin(), levelList.end()), levelList.end());
+    
+    return levelList;
+}
+    
+    
+// 次の試合に参加するメンバーを決定して取得
+std::vector< std::vector<UserInfo *> > Member::selectNextMatchMembersRandomPair(int courtNum, Level level)
+{
+    std::vector< std::vector<UserInfo *> > entryMemberListVec;
+    std::vector<UserInfo *> entryMemberList;
+
+    // 使えるコート数が0ならreturn
+    if (courtNum <= 0) return entryMemberListVec;
+    
+    bool containsRest = true;
+    int entryMemberNum = (int)this->getEntryMemberList(containsRest, level).size();
     
     // 参加者が4人以下なら試合できない
     if (entryMemberNum < 4)
@@ -498,12 +622,12 @@ std::vector< std::vector<UserInfo *> > Member::selectNextMatchMembers(int courtN
     if (courtNum * 4 > entryMemberNum) courtNum = (int)(entryMemberNum / 4);
     std::vector<UserInfo *> minMemberList;
     std::vector<UserInfo *> maxMemberList;
-    int minCount = this->getMinGameCount();
-    int maxCount = this->getMaxGameCount();
+    int minCount = this->getMinGameCount(level);
+    int maxCount = this->getMaxGameCount(level);
     for (int i = minCount; i <= maxCount; i++)
     {
         bool containsEntryGame = (i == minCount);
-        std::vector<UserInfo *> tempList = this->getEntryMemberListWithGameCount(i, containsEntryGame);
+        std::vector<UserInfo *> tempList = this->getEntryMemberListWithGameCount(i, containsEntryGame, level);
         
         if (minMemberList.empty() || minMemberList.size() + tempList.size() <= courtNum * 4)
             minMemberList.insert(minMemberList.end(), tempList.begin(), tempList.end());
@@ -666,25 +790,29 @@ AllocationType Member::getAllocationType()
 #pragma mark - ********** 試合メンバー決定補助用メソッド **********
     
 // 最小試合回数
-int Member::getMinGameCount()
+int Member::getMinGameCount(Level level)
 {
     int minCount = INT_MAX;
     for (auto member : this->memberList)
     {
-        if (member->isEntry)
-            minCount = MIN(minCount, member->gameCount);
+        if (level != Level::Unknown && member->level != level) continue;
+        if (!member->isEntry) continue;
+        
+        minCount = MIN(minCount, member->gameCount);
     }
     return minCount;
 }
     
 // 最大試合回数
-int Member::getMaxGameCount()
+int Member::getMaxGameCount(Level level)
 {
     int maxCount = -1;
     for (auto member : this->memberList)
     {
-        if (member->isEntry)
-            maxCount = MAX(maxCount, member->gameCount);
+        if (level != Level::Unknown && member->level != level) continue;
+        if (!member->isEntry) continue;
+        
+        maxCount = MAX(maxCount, member->gameCount);
     }
     return maxCount;
 }
