@@ -17,15 +17,19 @@ class MemberEditLayer : public CsbLayerBase
 {
     enum ButtonTag
     {
+        Delete,
+        Save,
+        Back,
+    };
+    
+    enum CheckBoxTag
+    {
         Male,
         Female,
         Training,
         Beginner,
         Middle,
         Higher,
-        Delete,
-        Save,
-        Back,
     };
     
 public:
@@ -37,6 +41,8 @@ protected:
     bool init(UserInfo *userInfo);
     
     virtual void pushedButton(cocos2d::Ref *pSender, cocos2d::ui::Widget::TouchEventType type);
+    virtual void pushedCheckBox(cocos2d::Ref *pSender, cocos2d::ui::CheckBox::EventType type);
+
 
 private:
     UserInfo *userInfo;
@@ -52,22 +58,20 @@ private:
     cocos2d::ui::EditBox *nameFuriganaEditBox;
     cocos2d::ui::EditBox *nicknameEditBox;
     
-    cocos2d::ui::Button *maleButton;
-    cocos2d::ui::Button *femaleButton;
-    cocos2d::ui::Button *trainingButton;
-    cocos2d::ui::Button *beginnerButton;
-    cocos2d::ui::Button *middleButton;
-    cocos2d::ui::Button *higherButton;
+    cocos2d::ui::CheckBox *maleCheckBox;
+    cocos2d::ui::CheckBox *femaleCheckBox;
+    cocos2d::ui::CheckBox *trainingCheckBox;
+    cocos2d::ui::CheckBox *beginnerCheckBox;
+    cocos2d::ui::CheckBox *middleCheckBox;
+    cocos2d::ui::CheckBox *higherCheckBox;
     cocos2d::ui::EditBox *countEditBox;
     cocos2d::ui::EditBox *lastTimeEditBox;
-//    cocos2d::ui::TextField *countTextField;
-//    cocos2d::ui::TextField *lastTimeTextField;
     cocos2d::ui::Button *deleteButton;
     cocos2d::ui::Button *saveButton;
     cocos2d::ui::Button *backButton;
     
-    void updateGenderButton();
-    void updateLevelButton();
+    void updateGenderCheckBox();
+    void updateLevelCheckBox();
     
     void showDeleteConfirm();
     void deleteUserInfo();

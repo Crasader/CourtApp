@@ -17,16 +17,14 @@ MemberEditLayer::MemberEditLayer()
 :nameEditBox(nullptr)
 ,nameFuriganaEditBox(nullptr)
 ,nicknameEditBox(nullptr)
-,maleButton(nullptr)
-,femaleButton(nullptr)
-,trainingButton(nullptr)
-,beginnerButton(nullptr)
-,middleButton(nullptr)
-,higherButton(nullptr)
+,maleCheckBox(nullptr)
+,femaleCheckBox(nullptr)
+,trainingCheckBox(nullptr)
+,beginnerCheckBox(nullptr)
+,middleCheckBox(nullptr)
+,higherCheckBox(nullptr)
 ,countEditBox(nullptr)
 ,lastTimeEditBox(nullptr)
-//,countTextField(nullptr)
-//,lastTimeTextField(nullptr)
 ,deleteButton(nullptr)
 ,saveButton(nullptr)
 ,backButton(nullptr)
@@ -73,34 +71,29 @@ bool MemberEditLayer::init(UserInfo *userInfo)
     nicknameEditBox = this->makeEditBox(Vec2(x, y), "[任意]ニックネーム");
 
     auto contentPanel = panel->getChildByName<ui::Layout *>("PanelContent");
-    maleButton     = contentPanel->getChildByName<ui::Button *>("ButtonGenderMale");
-    femaleButton   = contentPanel->getChildByName<ui::Button *>("ButtonGenderFemale");
-    trainingButton = contentPanel->getChildByName<ui::Button *>("ButtonLevelTraining");
-    beginnerButton = contentPanel->getChildByName<ui::Button *>("ButtonLevelBeginner");
-    middleButton   = contentPanel->getChildByName<ui::Button *>("ButtonLevelMiddle");
-    higherButton   = contentPanel->getChildByName<ui::Button *>("ButtonLevelHigher");
+    maleCheckBox     = contentPanel->getChildByName<ui::CheckBox *>("CheckBoxGenderMale");
+    femaleCheckBox   = contentPanel->getChildByName<ui::CheckBox *>("CheckBoxGenderFemale");
+    trainingCheckBox = contentPanel->getChildByName<ui::CheckBox *>("CheckBoxLevelTraining");
+    beginnerCheckBox = contentPanel->getChildByName<ui::CheckBox *>("CheckBoxLevelBeginner");
+    middleCheckBox  = contentPanel->getChildByName<ui::CheckBox *>("CheckBoxLevelMiddle");
+    higherCheckBox   = contentPanel->getChildByName<ui::CheckBox *>("CheckBoxLevelHigher");
     
-    y -= 80.0f;
-    y -= 80.0f;
-    y -= 80.0f;
+    y -= 300.0f;
     countEditBox = this->makeEditBox(Vec2(x, y), "参加回数(編集非推奨)");
     
     y -= 80.0f;
     lastTimeEditBox = this->makeEditBox(Vec2(x, y), "最終参加日(編集非推奨)");
     
-//    countTextField    = panel->getChildByName<ui::TextField *>("TextFieldCount");
-//    lastTimeTextField = panel->getChildByName<ui::TextField *>("TextFieldLastTime");
-    
     deleteButton  = headerPanel->getChildByName<ui::Button *>("ButtonDelete");
     saveButton    = headerPanel->getChildByName<ui::Button *>("ButtonSave");
     backButton    = headerPanel->getChildByName<ui::Button *>("ButtonBack");
    
-    this->addButtonEvent(maleButton,     ButtonTag::Male);
-    this->addButtonEvent(femaleButton,   ButtonTag::Female);
-    this->addButtonEvent(trainingButton, ButtonTag::Training);
-    this->addButtonEvent(beginnerButton, ButtonTag::Beginner);
-    this->addButtonEvent(middleButton,   ButtonTag::Middle);
-    this->addButtonEvent(higherButton,   ButtonTag::Higher);
+    this->addCheckBoxEvent(maleCheckBox,     CheckBoxTag::Male);
+    this->addCheckBoxEvent(femaleCheckBox,   CheckBoxTag::Female);
+    this->addCheckBoxEvent(trainingCheckBox, CheckBoxTag::Training);
+    this->addCheckBoxEvent(beginnerCheckBox, CheckBoxTag::Beginner);
+    this->addCheckBoxEvent(middleCheckBox,   CheckBoxTag::Middle);
+    this->addCheckBoxEvent(higherCheckBox,   CheckBoxTag::Higher);
     this->addButtonEvent(deleteButton,   ButtonTag::Delete);
     this->addButtonEvent(saveButton,     ButtonTag::Save);
     this->addButtonEvent(backButton,        ButtonTag::Back);
@@ -131,51 +124,54 @@ bool MemberEditLayer::init(UserInfo *userInfo)
     
     countEditBox->setText(countStr.c_str());
     lastTimeEditBox->setText(lastTime.c_str());
-//    countTextField->setString(countStr);
-//    lastTimeTextField->setString(lastTime);
-    
     
     
     // ボタン表示更新
-    this->updateGenderButton();
-    this->updateLevelButton();
+    this->updateGenderCheckBox();
+    this->updateLevelCheckBox();
     
     return true;
 }
 
 
-void MemberEditLayer::updateGenderButton()
+void MemberEditLayer::updateGenderCheckBox()
 {
-    bool enabledMale   = true;
-    bool enabledFemale = true;
+    bool checkedMale   = false;
+    bool checkedFemale = false;
     switch (gender) {
-        case Gender::Male:   enabledMale = false;   break;
-        case Gender::Female: enabledFemale = false; break;
+        case Gender::Male:   checkedMale = true;   break;
+        case Gender::Female: checkedFemale = true; break;
         default: break;
     }
     
-    this->setButtonEnabled(maleButton,   enabledMale);
-    this->setButtonEnabled(femaleButton, enabledFemale);
+    this->maleCheckBox->setSelected(checkedMale);
+    this->maleCheckBox->setEnabled(!checkedMale);
+    this->femaleCheckBox->setSelected(checkedFemale);
+    this->femaleCheckBox->setEnabled(!checkedFemale);
 }
 
-void MemberEditLayer::updateLevelButton()
+void MemberEditLayer::updateLevelCheckBox()
 {
-    bool enabledTraining = true;
-    bool enabledBeginner = true;
-    bool enabledMiddle   = true;
-    bool enabledHigher   = true;
+    bool checkedTraining = false;
+    bool checkedBeginner = false;
+    bool checkedMiddle   = false;
+    bool checkedHigher   = false;
     switch (level) {
-        case Level::Training: enabledTraining = false;  break;
-        case Level::Beginner: enabledBeginner = false;  break;
-        case Level::Middle:   enabledMiddle   = false;  break;
-        case Level::Higher:   enabledHigher   = false;  break;
+        case Level::Training: checkedTraining = true;  break;
+        case Level::Beginner: checkedBeginner = true;  break;
+        case Level::Middle:   checkedMiddle   = true;  break;
+        case Level::Higher:   checkedHigher   = true;  break;
         default:    break;
     }
     
-    this->setButtonEnabled(trainingButton, enabledTraining);
-    this->setButtonEnabled(beginnerButton, enabledBeginner);
-    this->setButtonEnabled(middleButton, enabledMiddle);
-    this->setButtonEnabled(higherButton, enabledHigher);
+    this->trainingCheckBox->setSelected(checkedTraining);
+    this->trainingCheckBox->setEnabled(!checkedTraining);
+    this->beginnerCheckBox->setSelected(checkedBeginner);
+    this->beginnerCheckBox->setEnabled(!checkedBeginner);
+    this->middleCheckBox->setSelected(checkedMiddle);
+    this->middleCheckBox->setEnabled(!checkedMiddle);
+    this->higherCheckBox->setSelected(checkedHigher);
+    this->higherCheckBox->setEnabled(!checkedHigher);
 }
 
 
@@ -187,20 +183,30 @@ void MemberEditLayer::pushedButton(Ref *pSender, ui::Widget::TouchEventType type
     auto button = dynamic_cast<ui::Button *>(pSender);
     ButtonTag tag = (ButtonTag)button->getTag();
     switch (tag) {
-        case ButtonTag::Male:       gender = Gender::Male;      break;
-        case ButtonTag::Female:     gender = Gender::Female;    break;
-        case ButtonTag::Training:   level  = Level::Training;   break;
-        case ButtonTag::Beginner:   level  = Level::Beginner;   break;
-        case ButtonTag::Middle:     level  = Level::Middle;     break;
-        case ButtonTag::Higher:     level  = Level::Higher;     break;
         case ButtonTag::Delete:     this->showDeleteConfirm();  return;
         case ButtonTag::Save:       this->saveUserInfo();       return;
         case ButtonTag::Back:      this->close();              return;
     }
-    
-    this->updateGenderButton();
-    this->updateLevelButton();
 }
+
+void MemberEditLayer::pushedCheckBox(cocos2d::Ref *pSender, cocos2d::ui::CheckBox::EventType type)
+{
+    auto checkBox = dynamic_cast<ui::CheckBox *>(pSender);
+    CheckBoxTag tag = (CheckBoxTag)checkBox->getTag();
+    switch (tag) {
+        case CheckBoxTag::Male:       gender = Gender::Male;      break;
+        case CheckBoxTag::Female:     gender = Gender::Female;    break;
+        case CheckBoxTag::Training:   level  = Level::Training;   break;
+        case CheckBoxTag::Beginner:   level  = Level::Beginner;   break;
+        case CheckBoxTag::Middle:     level  = Level::Middle;     break;
+        case CheckBoxTag::Higher:     level  = Level::Higher;     break;
+    }
+    
+    this->updateGenderCheckBox();
+    this->updateLevelCheckBox();
+}
+
+
 
 void MemberEditLayer::showDeleteConfirm()
 {
@@ -230,8 +236,6 @@ void MemberEditLayer::saveUserInfo()
     
     countStr     = std::string(countEditBox->getText());
     lastTime     = std::string(lastTimeEditBox->getText());
-//    countStr     = countTextField->getString();
-//    lastTime     = lastTimeTextField->getString();
     
     int count  = std::all_of(countStr.cbegin(), countStr.cend(), isdigit) ? std::atoi(countStr.c_str()) : -1;
     
