@@ -19,7 +19,8 @@ using namespace cocostudio;
 
 
 MemberLayer::MemberLayer()
-:tabNode(nullptr)
+:memberNumText(nullptr)
+,tabNode(nullptr)
 ,searchDrawerLayer(nullptr)
 ,isShowingSearchDrawerLayer(false)
 ,isMovingDrawer(false)
@@ -53,6 +54,7 @@ bool MemberLayer::init()
     
     // ボタン
     auto headerPanel = mainLayer->getChildByName<ui::Layout *>("HeaderPanel");
+    this->memberNumText = headerPanel->getChildByName<ui::Text *>("TextMemberNum");
     this->addButtonEvent(headerPanel->getChildByName<ui::Button *>("ButtonSort"), ButtonTag::Sort);
     this->addButtonEvent(headerPanel->getChildByName<ui::Button *>("ButtonAddMember"), ButtonTag::AddMember);
     
@@ -96,6 +98,11 @@ MemberItemNode *MemberLayer::getMemberItemNodeAt(int memberId)
 void MemberLayer::updateMemberList()
 {
     std::vector<std::pair<std::string, std::vector<int>>> categorizedMemberList = Manager::Member::getInstance()->getCategorizedMemberList();
+    
+    // タイトル更新
+    auto allMemberList      = Manager::Member::getInstance()->getMemberList(false);
+    auto filteredMemberList = Manager::Member::getInstance()->getMemberList(true);
+    this->memberNumText->setString(StringUtils::format("[%d/%d]", (int)filteredMemberList.size(), (int)allMemberList.size()));
     
     // ScrollViewサイズ更新
     float contentHeight = 0.0f;

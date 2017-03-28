@@ -133,7 +133,7 @@ void ParticipantLayer::updateParticipantList()
         std::vector<UserInfo *> memberList = entryMemberListPair.second;
         
         // カテゴリ
-        auto categoryItemNode = MemberCategoryItemNode::create(categoryName);
+        auto categoryItemNode = MemberCategoryItemNode::create(StringUtils::format("%s:%d名", categoryName.c_str(), (int)memberList.size()));
         categoryItemNode->setAnchorPoint(Vec2::ANCHOR_MIDDLE_TOP);
         y -= MEMBER_CATEGORY_ITEM_HEIGHT / 2.0f;
         categoryItemNode->setPosition(MEMBER_CATEGORY_ITEM_WIDTH / 2.0f, y);

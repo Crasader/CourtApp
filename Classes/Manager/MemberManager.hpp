@@ -43,7 +43,7 @@ namespace Manager {
         // ********** メンバー **********
 
         // 全メンバーリストを取得
-        std::vector<UserInfo *> getMemberList();
+        std::vector<UserInfo *> getMemberList(bool filtered = true);
         
         // カテゴライズされた後のメンバーリストを取得
         std::vector<std::pair<std::string, std::vector<int>>> getCategorizedMemberList();

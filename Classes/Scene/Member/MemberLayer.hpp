@@ -39,6 +39,7 @@ protected:
 private:
     
     TabNode *tabNode;
+    cocos2d::ui::Text *memberNumText;
     
     // 検索／ソート用
     SearchDrawerLayer *searchDrawerLayer;

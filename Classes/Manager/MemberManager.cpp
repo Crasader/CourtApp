@@ -69,12 +69,12 @@ void Member::initialize()
 #pragma mark - ********** メンバー **********
 
 // 全メンバーリストを取得
-std::vector<UserInfo *> Member::getMemberList()
+std::vector<UserInfo *> Member::getMemberList(bool filtered)
 {
-    std::vector<UserInfo *> sortedMemberList = this->getFilteredMemberList();
+    std::vector<UserInfo *> list = (filtered) ? this->getFilteredMemberList() : this->memberList;
     
     // ソートする
-    std::sort(sortedMemberList.begin(), sortedMemberList.end(), [this](const UserInfo *a, const UserInfo *b){
+    std::sort(list.begin(), list.end(), [this](const UserInfo *a, const UserInfo *b){
         switch (this->sortType) {
             case SortType::Syllabary: return (a->nameFurigana < b->nameFurigana);
             case SortType::Gender:    return (a->gender == b->gender) ? (a->nameFurigana < b->nameFurigana) : (a->gender < b->gender);
@@ -84,7 +84,7 @@ std::vector<UserInfo *> Member::getMemberList()
         }
     });
     
-    return sortedMemberList;
+    return list;
 }
     
 std::vector<std::pair<std::string, std::vector<int>>> Member::getCategorizedMemberList()

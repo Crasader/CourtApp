@@ -113,7 +113,7 @@ std::string UserInfo::convertLevelToString(Level level)
 std::string UserInfo::getLevelText()
 {
     switch (level) {
-        case Level::Training:   return "練習";
+        case Level::Training:   return "入門";
         case Level::Beginner:   return "初級";
         case Level::Middle:     return "中級";
         case Level::Higher:     return "上級";
