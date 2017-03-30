@@ -75,6 +75,7 @@ public:
     std::string getGenderStr(){return this->convertGenderToString(this->gender);};
     std::string getLevelStr(){return this->convertLevelToString(this->level);};
     std::string getLevelText();
+    int getLevelPoint();
     std::string getNickname();
     
     // 試合参加／キャンセル

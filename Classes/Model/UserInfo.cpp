@@ -121,6 +121,17 @@ std::string UserInfo::getLevelText()
     }
 }
 
+int UserInfo::getLevelPoint()
+{
+    switch (level) {
+        case Level::Training:   return 1;
+        case Level::Beginner:   return 2;
+        case Level::Middle:     return 3;
+        case Level::Higher:     return 4;
+        default:                return 0;
+    }
+}
+
 std::string UserInfo::getNickname()
 {
     if (nickname.empty())

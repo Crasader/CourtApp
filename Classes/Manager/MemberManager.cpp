@@ -89,7 +89,6 @@ std::vector<UserInfo *> Member::getMemberList(bool filtered)
     
 std::vector<std::pair<std::string, std::vector<int>>> Member::getCategorizedMemberList()
 {
-//    std::vector<std::pair<std::string, std::vector<int>>> categorizedMemberList;
     switch (this->sortType) {
         case SortType::Syllabary:   return this->getCategorizedMemberListSyllabary();
         case SortType::Level:       return this->getCategorizedMemberListLevel();
@@ -574,6 +573,12 @@ std::vector< std::vector<UserInfo *> > Member::selectNextMatchMembers(int courtN
                 }
             }
             
+            // 各コートで参加者が足りない場合
+            if (entryMemberListVec.empty())
+            {
+                Kyarochon::Event::showAlertView("すべてのレベルで\n参加者が4人に達していません");
+            }
+            
             break;
         }
 
@@ -866,33 +871,30 @@ std::vector<UserInfo *> Member::getEntryListConsideredRelation(std::vector<UserI
 }
     
     
+#pragma mark - ********** 各コートのペアを決定 **********
+    
 // コート用に4人ずつで分けたリストを返す
 std::vector< std::vector<UserInfo *> > Member::getEntryListByCourt(std::vector<UserInfo *> entryList)
 {
     std::vector< std::vector<UserInfo *> > entryListByCourt;
- 
     
-    // 最もペアになった回数が少ない人を取得
-    auto getMemberFunc = [](UserInfo *baseMember, std::vector<UserInfo *> memberList)
-    {
-        int minCount = INT_MAX;
-        UserInfo *selected = nullptr;
-        for (auto member : memberList)
-        {
-            if (member == baseMember) continue;
-            
-            int count = baseMember->pairCountArray[member->id];
-            if (minCount > count)
-            {
-                minCount = count;
-                selected = member;
-            }
-        }
-        return selected;
-    };
+
+    // ペアを決定
+    std::vector<std::pair<UserInfo *, UserInfo *>> pairList;
+    switch (shuffleType) {
+        case ShuffleType::RandomPair:
+            pairList = this->getPairListByCourtRandomPair(entryList);
+            break;
+        case ShuffleType::RandomPoint:
+            pairList = this->getPairListByCourtRandomPoint(entryList);
+            break;
+    }
+    std::random_device rdev{};
+    std::mt19937 mt(rdev());
+    std::shuffle(pairList.begin(), pairList.end(), mt);
+
     
-    
-    // 最も戦った回数が少ないペアを取得
+    // 最も対戦回数が少ないペアを取得するメソッド
     auto getPairFunc = [](std::pair<UserInfo *, UserInfo *> basePair, std::vector<std::pair<UserInfo *, UserInfo *>> pairList)
     {
         if (pairList.size() == 1) return pairList.front();
@@ -902,9 +904,9 @@ std::vector< std::vector<UserInfo *> > Member::getEntryListByCourt(std::vector<U
         for (auto pair : pairList)
         {
             int count = basePair.first->fightCountArray[pair.first->id] +
-                        basePair.first->fightCountArray[pair.second->id] +
-                        basePair.second->fightCountArray[pair.first->id] +
-                        basePair.second->fightCountArray[pair.second->id];
+            basePair.first->fightCountArray[pair.second->id] +
+            basePair.second->fightCountArray[pair.first->id] +
+            basePair.second->fightCountArray[pair.second->id];
             if (minCount > count)
             {
                 minCount = count;
@@ -915,27 +917,7 @@ std::vector< std::vector<UserInfo *> > Member::getEntryListByCourt(std::vector<U
     };
     
     
-    
-    // 組んだ回数の少ない人同士のペアのリストを生成
-    std::vector<std::pair<UserInfo *, UserInfo *>> pairList;
-    while (!entryList.empty())
-    {
-        auto base = entryList.front();
-        entryList.erase(entryList.begin());
-
-        auto selected = getMemberFunc(base, entryList);
-        pairList.emplace_back(base, selected);
-        
-        for (auto it = entryList.begin(); it != entryList.end(); )
-        {
-            if ((*it) == selected)
-                it = entryList.erase(it);
-            else
-                ++it;
-        }
-    }
-
-    // 戦った回数の少ないペア同士を戦わせる
+    // 戦った回数の少ないペア同士を戦わせるようコートを決定する
     while (!pairList.empty())
     {
         auto base = pairList.front();
@@ -960,8 +942,68 @@ std::vector< std::vector<UserInfo *> > Member::getEntryListByCourt(std::vector<U
     
     return entryListByCourt;
 }
+    
+std::vector<std::pair<UserInfo *, UserInfo *>> Member::getPairListByCourtRandomPair(std::vector<UserInfo *> entryList)
+{
+    // 最もペアになった回数が少ない人を取得するメソッド
+    auto getMemberFunc = [](UserInfo *baseMember, std::vector<UserInfo *> memberList)
+    {
+        int minCount = INT_MAX;
+        UserInfo *selected = nullptr;
+        for (auto member : memberList)
+        {
+            if (member == baseMember) continue;
+            
+            int count = baseMember->pairCountArray[member->id];
+            if (minCount > count)
+            {
+                minCount = count;
+                selected = member;
+            }
+        }
+        return selected;
+    };
+    
+    
+    // 組んだ回数の少ない人同士のペアのリストを生成
+    std::vector<std::pair<UserInfo *, UserInfo *>> pairList;
+    while (!entryList.empty())
+    {
+        auto base = entryList.front();
+        entryList.erase(entryList.begin());
 
+        auto selected = getMemberFunc(base, entryList);
+        pairList.emplace_back(base, selected);
+        
+        for (auto it = entryList.begin(); it != entryList.end(); )
+        {
+            if ((*it) == selected)
+                it = entryList.erase(it);
+            else
+                ++it;
+        }
+    }
+    
+    return pairList;
+}
 
+    
+std::vector<std::pair<UserInfo *, UserInfo *>> Member::getPairListByCourtRandomPoint(std::vector<UserInfo *> entryList)
+{
+    // レベルごとにソートし、最初と最後の人をペアとして繰り返し追加する
+    std::vector<std::pair<UserInfo *, UserInfo *>> pairList;
+    std::sort(entryList.begin(), entryList.end(), [this](UserInfo *a, UserInfo *b){
+        return (a->getLevelPoint() > b->getLevelPoint());
+    });
+    while (!entryList.empty())
+    {
+        pairList.emplace_back(entryList.front(), entryList.back());
+        entryList.erase(entryList.end() - 1);
+        entryList.erase(entryList.begin());
+    }
+
+    return pairList;
+}
     
 #pragma mark - ********** 試合情報の追加／削除 **********
 // 組み合わせ情報を追加(一括)

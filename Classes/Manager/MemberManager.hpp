@@ -126,12 +126,18 @@ namespace Manager {
         int getMinGameCount(Level level = Level::Unknown);
         int getMaxGameCount(Level level = Level::Unknown);
         
-        // 試合数／ペア数の少ない人を取得する
+        // 試合数／ペア数の少ない人を取得する（再帰）
         std::vector<UserInfo *> getEntryListConsideredRelation(std::vector<UserInfo *> entryMemberList, std::vector<UserInfo *> minMemberList, int addNum);
 
+        
+        // ********** 各コートのペア決定補助用メソッド **********
+        
         // コート用に4人ずつで分けたリストを返す
         std::vector< std::vector<UserInfo *> > getEntryListByCourt(std::vector<UserInfo *> entryList);
       
+        // 条件に沿った形でペアを組んだリストを返す
+        std::vector<std::pair<UserInfo *, UserInfo *>> getPairListByCourtRandomPair(std::vector<UserInfo *> entryList);
+        std::vector<std::pair<UserInfo *, UserInfo *>> getPairListByCourtRandomPoint(std::vector<UserInfo *> entryList);
         
         
     public:
