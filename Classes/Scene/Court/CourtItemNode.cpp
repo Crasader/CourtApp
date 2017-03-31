@@ -77,7 +77,7 @@ bool CourtItemNode::init(CourtInfo *courtInfo)
     
     for (auto member : memberList)
     {
-        auto memberItemNode = CourtMemberItemNode::create(courtInfo->id, member, num);
+        auto memberItemNode = CourtMemberItemNode::create(courtInfo->id, member, num, !isSameLevel);
         float x = ((float)(num / 2) + 0.5f) * COURT_MEMBER_ITEM_WIDTH;
         float y = panel->getContentSize().height - 40.0f - (floorf(num % 2) + 0.5f ) * COURT_MEMBER_ITEM_HEIGHT + (DEFAULT_SCREEN_HEIGHT - Kyarochon::Layout::getScaledHeight());
         

@@ -17,18 +17,19 @@ class CourtMemberItemNode : public CsbLayerBase
 {
     
 public:
-    static CourtMemberItemNode *create(int courtId, UserInfo *userInfo, int num);
+    static CourtMemberItemNode *create(int courtId, UserInfo *userInfo, int num, bool shouldShowLevel);
     
 protected:
     CourtMemberItemNode();
     virtual ~CourtMemberItemNode();
-    bool init(int courtId, UserInfo *userInfo, int num);
+    bool init(int courtId, UserInfo *userInfo, int num, bool shouldShowLevel);
     
 
 private:
     UserInfo *userInfo;
     int courtId;
     cocos2d::ui::Text *nameText;
+    cocos2d::ui::Text *levelText;
     
 protected:
     // ボタン
