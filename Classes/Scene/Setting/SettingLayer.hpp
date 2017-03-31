@@ -20,6 +20,8 @@ class SettingLayer : public CsbLayerBase
     
     enum ButtonTag
     {
+        Left,
+        Right,
         ShowWinList,
         ResetWinNum,
         ResetHistory,
@@ -46,7 +48,6 @@ protected:
     bool init() override;
     
     // UIイベント
-    virtual void changedSliderValue(cocos2d::Ref *pSender, cocos2d::ui::Slider::EventType type) override;
     virtual void pushedButton(cocos2d::Ref *pSender, cocos2d::ui::Widget::TouchEventType type) override;
     virtual void pushedCheckBox(cocos2d::Ref *pSender, cocos2d::ui::CheckBox::EventType type) override;
     
@@ -58,7 +59,8 @@ private:
     
     // コート関連
     cocos2d::ui::Text *courtNumText;
-    cocos2d::ui::Slider *courtNumSlider;
+    cocos2d::ui::Button *leftButton;
+    cocos2d::ui::Button *rightButton;
     cocos2d::ui::CheckBox *shuffleRandomPairCheckBox;
     cocos2d::ui::CheckBox *shuffleRandomPointCheckBox;
     cocos2d::ui::CheckBox *allocationAllCheckBox;
@@ -68,7 +70,7 @@ private:
     cocos2d::ui::CheckBox *showWinNumCheckBox;
     cocos2d::ui::CheckBox *hideWinNumCheckBox;
     
-    void updateCourtNumSlider();
+    void updateCourtNumButton();
     void updateCheckBox();
     
     void showResetWinNumConfirm();

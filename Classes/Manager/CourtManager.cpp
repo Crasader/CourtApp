@@ -7,6 +7,7 @@
 //
 
 #include "CourtManager.hpp"
+#include "CommonDefine.h"
 #include "MemberManager.hpp"
 #include "DatabaseManager.h"
 #include "UserDefaultUtil.h"
@@ -214,8 +215,8 @@ CourtInfo *Court::getCourtInfo(int courtId)
 
 void Court::setUseCourtNum(int courtNum)
 {
-    this->useCourtNum = courtNum;
-    Kyarochon::UserDefault::setInt(UD_KEY_COURT_NUM, courtNum);
+    this->useCourtNum = MIN(MAX(courtNum, MIN_COURT_NUM), MAX_COURT_NUM);
+    Kyarochon::UserDefault::setInt(UD_KEY_COURT_NUM, this->useCourtNum);
 }
 
 int Court::getUseCourtNum()

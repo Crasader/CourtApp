@@ -7,6 +7,7 @@
 //
 
 #include "SettingLayer.hpp"
+#include "CommonDefine.h"
 #include "CourtManager.hpp"
 #include "MemberManager.hpp"
 
@@ -16,8 +17,8 @@ using namespace cocostudio;
 
 SettingLayer::SettingLayer()
 :courtNumText(nullptr)
-,courtNumSlider(nullptr)
-,shuffleRandomPairCheckBox(nullptr)
+,leftButton(nullptr)
+,rightButton(nullptr)
 ,shuffleRandomPointCheckBox(nullptr)
 ,allocationAllCheckBox(nullptr)
 ,allocationByLevelCheckBox(nullptr)
@@ -52,13 +53,15 @@ bool SettingLayer::init()
     // コート関連
     auto courtPanel = scrollView->cocos2d::Node::getChildByName<ui::Layout *>("CourtPanel");
     courtNumText = courtPanel->getChildByName<ui::Text *>("TextCourtNum");
-    courtNumSlider = courtPanel->getChildByName<ui::Slider *>("SliderCourtNum");
+    leftButton = courtPanel->getChildByName<ui::Button *>("ButtonLeft");
+    rightButton = courtPanel->getChildByName<ui::Button *>("ButtonRight");
     shuffleRandomPairCheckBox = courtPanel->getChildByName<ui::CheckBox *>("CheckBoxShuffleRadomPair");
     shuffleRandomPointCheckBox = courtPanel->getChildByName<ui::CheckBox *>("CheckBoxShuffleRandomPoint");
     allocationAllCheckBox = courtPanel->getChildByName<ui::CheckBox *>("CheckBoxAllocationAll");
     allocationByLevelCheckBox = courtPanel->getChildByName<ui::CheckBox *>("CheckBoxAllocationByCourt");
     
-    this->addSliderEvent(courtNumSlider, SliderTag::CourtNum);
+    this->addButtonEvent(leftButton, ButtonTag::Left);
+    this->addButtonEvent(rightButton, ButtonTag::Right);
     this->addCheckBoxEvent(shuffleRandomPairCheckBox, CheckBoxTag::ShuffleRandomPair);
     this->addCheckBoxEvent(shuffleRandomPointCheckBox, CheckBoxTag::ShuffleRandomPoint);
     this->addCheckBoxEvent(allocationAllCheckBox, CheckBoxTag::AllocationAll);
@@ -77,17 +80,18 @@ bool SettingLayer::init()
     this->addButtonEvent(dynamic_cast<ui::Button *>(historyPanel->getChildByName("ButtonResetGameHistory")), ButtonTag::ResetHistory);
     
     // 表示更新
-    this->updateCourtNumSlider();
+    this->updateCourtNumButton();
     this->updateCheckBox();
     
     return true;
 }
 
 
-void SettingLayer::updateCourtNumSlider()
+void SettingLayer::updateCourtNumButton()
 {
     int courtNum = Manager::Court::getInstance()->getUseCourtNum();
-    this->setSliderValue(this->courtNumSlider, MIN_COURT_NUM, MAX_COURT_NUM, courtNum);
+    leftButton->setVisible(courtNum != MIN_COURT_NUM);
+    rightButton->setVisible(courtNum != MAX_COURT_NUM);
     this->courtNumText->setString(StringUtils::toString(courtNum));
 }
 
@@ -123,21 +127,8 @@ void SettingLayer::updateCheckBox()
     bool showWinNum = Manager::Court::getInstance()->shouldShowWinNum();
     this->showWinNumCheckBox->setSelected(showWinNum);
     this->hideWinNumCheckBox->setSelected(!showWinNum);
-    
-    
 }
 
-void SettingLayer::changedSliderValue(cocos2d::Ref *pSender, cocos2d::ui::Slider::EventType type)
-{
-    auto slider = dynamic_cast<ui::Slider *>(pSender);
-    SliderTag tag = (SliderTag)slider->getTag();
-    switch (tag) {
-        case SliderTag::CourtNum:
-            Manager::Court::getInstance()->setUseCourtNum(this->getSliderValueInt(slider, MIN_COURT_NUM, MAX_COURT_NUM));
-            break;
-    }
-    this->updateCourtNumSlider();
-}
 
 void SettingLayer::pushedButton(Ref *pSender, ui::Widget::TouchEventType type)
 {
@@ -145,17 +136,22 @@ void SettingLayer::pushedButton(Ref *pSender, ui::Widget::TouchEventType type)
     
     auto button = dynamic_cast<ui::Button *>(pSender);
     ButtonTag tag = (ButtonTag)button->getTag();
+    
+    int courtNum = Manager::Court::getInstance()->getUseCourtNum();
+    
     switch (tag) {
+        case Left:  Manager::Court::getInstance()->setUseCourtNum(courtNum - 1); break;
+        case Right: Manager::Court::getInstance()->setUseCourtNum(courtNum + 1); break;
         case ButtonTag::ResetWinNum: this->showResetWinNumConfirm(); break;
         case ButtonTag::ShowWinList: Kyarochon::Event::sendCustomEvent(EVENT_SHOW_WIN_LIST); return;
         case ButtonTag::ResetHistory: this->showResetHistoryConfirm(); return;
     }
+    
+    this->updateCourtNumButton();
 }
 
 void SettingLayer::pushedCheckBox(cocos2d::Ref *pSender, cocos2d::ui::CheckBox::EventType type)
 {
-    if (type == cocos2d::ui::CheckBox::EventType::UNSELECTED) return;
-    
     auto courtManager  = Manager::Court::getInstance();
     auto memberManager = Manager::Member::getInstance();
 
