@@ -223,7 +223,7 @@ void CourtLayer::showCourtView(CourtInfo *courtInfo)
     auto innnerSize = scrollView->getInnerContainerSize();
     
     auto courtItemNode = CourtItemNode::create(courtInfo);
-    float x = COURT_ITEM_WIDTH / 2.0f;
+    float x = COURT_ITEM_WIDTH / 2.0f + 50.0f;
     float y = innnerSize.height - (courtInfo->courtNum + 0.5f) * COURT_ITEM_HEIGHT + (DEFAULT_SCREEN_HEIGHT - Kyarochon::Layout::getScaledHeight());
     courtItemNode->setPosition(Vec2(x, y));
     scrollView->addChild(courtItemNode);
